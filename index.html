@@ -360,6 +360,42 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
   .sync span{display:none}
   .team-top .row .btn span.t{display:none}
 }
+
+/* Gruplar & AI */
+.grp{margin-left:auto;display:flex;align-items:center;gap:8px;font:inherit;font-size:13px;font-weight:700;color:var(--text);background:linear-gradient(135deg,rgba(61,220,132,.14),rgba(61,220,132,.04));border:1px solid rgba(61,220,132,.35);padding:7px 12px;border-radius:99px;cursor:pointer;white-space:nowrap;max-width:220px}
+.grp span{overflow:hidden;text-overflow:ellipsis}
+.grp svg:first-child{color:var(--green);flex:none}
+.grp + .sync{margin-left:8px}
+.bars.two{grid-template-columns:1fr 1fr;grid-template-rows:repeat(6,auto);grid-auto-flow:column;column-gap:14px}
+.pos-toggle.six{grid-template-columns:repeat(3,1fr)}
+.pos-toggle button.on.GK{border-color:var(--amber);color:#fcd34d;background:rgba(245,179,1,.1)}
+.ovr small{display:inline-flex;align-items:center;gap:3px}
+.ai-box{display:flex;gap:14px;align-items:center;padding:14px;border-radius:14px;background:linear-gradient(135deg,rgba(61,220,132,.12),rgba(59,130,246,.06));border:1px solid rgba(61,220,132,.3)}
+.ai-ring{--p:0;--c:var(--green);width:70px;height:70px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p)*1%),var(--bg2) 0);display:grid;place-items:center;position:relative;flex:none;transition:background .3s}
+.ai-ring::before{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--card)}
+.ai-ring span{position:relative;font-family:var(--cond);font-size:30px;font-weight:800}
+.ai-t{font-size:12px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.6px;display:flex;align-items:center;gap:6px}
+.ai-s{font-size:14px;margin-top:4px}
+.ai-top{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.ai-top .rb{min-width:auto;padding:0 8px}
+.welcome{max-width:900px;margin:10px auto 0}
+.hero{text-align:center;padding:30px 10px 26px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--green);border:1px solid rgba(61,220,132,.35);background:rgba(61,220,132,.08);padding:6px 12px;border-radius:99px}
+.hero h1{font-family:var(--cond);font-size:56px;font-weight:800;text-transform:uppercase;line-height:1;margin:16px 0 12px;letter-spacing:.5px}
+.hero h1 em{font-style:normal;color:var(--green)}
+.hero p{color:var(--muted);max-width:620px;margin:0 auto;line-height:1.6}
+.welcome-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.welcome .card h3{display:flex;align-items:center;gap:8px}
+.glist{display:grid;gap:8px}
+.gitem{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:var(--bg2);border:1px solid var(--line);font:inherit;font-weight:600;color:var(--text);cursor:pointer;text-align:left}
+.gitem:hover{border-color:var(--green)}
+.gcur{padding:14px;border-radius:14px;background:var(--bg2);border:1px solid var(--line)}
+@media (max-width:640px){
+  .welcome-grid{grid-template-columns:1fr}
+  .hero h1{font-size:40px}
+  .grp{max-width:150px;font-size:12px;padding:6px 10px}
+  .bars.two{column-gap:10px}
+}
 </style>
 </head>
 <body>
@@ -370,6 +406,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
       <div>Halı Saha <em>Pro</em></div>
     </div>
     <nav class="tabs" id="tabs"></nav>
+    <button class="grp" id="grp" data-act="grp-open" type="button" style="display:none"></button>
     <button class="sync" id="sync" data-act="sync-info" type="button"><i></i><span>Yerel kayıt</span></button>
   </div>
 </header>
@@ -381,8 +418,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <script>
 'use strict';
 /* =========================================================
-   KONFİGÜRASYON — Supabase bilgilerini deploy öncesi buraya
-   yazabilir ya da Ayarlar > Bulut ekranından girebilirsiniz.
+   KONFİGÜRASYON — ortak Supabase veritabanı
    ========================================================= */
 const APP_CONFIG = {
   SUPABASE_URL: 'https://blapcesouonfptmoxlbc.supabase.co',
@@ -390,14 +426,35 @@ const APP_CONFIG = {
 };
 
 /* ================== Sabitler ================== */
-const LS_KEY = 'halisaha_pro_v1';
-const ROLES = ['GK','DEF','MID','FWD'];
+const LS_GROUPS = 'hsp2_groups';
+const ROLES = ['GK','DEF','MID','FWD'];                 // saha hatları (takım motoru)
 const ROLE_TR = {GK:'Kaleci',DEF:'Defans',MID:'Orta Saha',FWD:'Forvet'};
 const ROLE_SHORT = {GK:'KL',DEF:'DF',MID:'OS',FWD:'FV'};
-const ROLE_KEY = {GK:'gk',DEF:'def',MID:'mid',FWD:'fwd'};
-const OPT_ATTRS = [['speed','Hız'],['passing','Pas'],['shooting','Şut'],['defending','Savunma']];
+// Ayrıntılı mevkiler
+const POS = [
+  {c:'GK', tr:'Kaleci', s:'KL', line:'GK', key:'gk'},
+  {c:'STP',tr:'Stoper', s:'STP',line:'DEF',key:'def'},
+  {c:'BEK',tr:'Bek',    s:'BEK',line:'DEF',key:'fullback'},
+  {c:'OS', tr:'Orta Saha',s:'OS',line:'MID',key:'mid'},
+  {c:'KNT',tr:'Kanat',  s:'KNT',line:'MID',key:'winger'},
+  {c:'FV', tr:'Forvet', s:'FV', line:'FWD',key:'fwd'}
+];
+const POSM = Object.fromEntries(POS.map(p=>[p.c,p]));
+const ATTRS = [['stamina','Kondisyon','KON'],['passing','Pas','PAS'],['technique','Teknik','TEK'],['speed','Hız','HIZ'],['shooting','Şut','ŞUT']];
+// Hat → o hatta oynanabilecek mevkiler (çarpan)
+const LINE_SUBS = {GK:[['GK',1]],DEF:[['STP',1],['BEK',1]],MID:[['OS',1],['KNT',1]],FWD:[['FV',1],['KNT',.95]]};
+const WIDE = new Set(['BEK','KNT']);
+// Yapay zeka reyting ağırlıkları (mevki bazlı)
+const POS_W = {
+  GK: {gk:.84,passing:.05,technique:.04,stamina:.04,speed:.03},
+  STP:{def:.58,stamina:.13,speed:.11,passing:.10,technique:.08},
+  BEK:{fullback:.48,speed:.18,stamina:.15,passing:.11,technique:.08},
+  OS: {mid:.46,passing:.22,technique:.14,stamina:.12,shooting:.06},
+  KNT:{winger:.46,speed:.20,technique:.15,passing:.10,shooting:.09},
+  FV: {fwd:.50,shooting:.22,technique:.12,speed:.10,stamina:.06}
+};
 const ALL_FORMATIONS = ['2-3-1','3-2-1','2-2-2','3-1-2','1-3-2','1-2-3','2-1-3','1-4-1'];
-const TEAM_SIZE = 7, MATCH_SIZE = 14;
+const TEAM_SIZE = 7, MATCH_SIZE = 14, SC = 9.9; // 99'luk ölçek → 10'luk fark normalizasyonu
 const DEFAULT_SETTINGS = {
   weights:{power:35,pos:30,stamina:20,gk:15},
   defaultFormation:'2-3-1',
@@ -417,8 +474,8 @@ const VIEWS = [
 const $ = (s,r=document)=>r.querySelector(s);
 const esc = s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const avg = a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
-const r1 = v=>Math.round(v*10)/10;
-const fmt = v=>{const x=r1(+v||0);return Number.isInteger(x)?String(x):x.toFixed(1).replace('.',',');};
+const fmt = v=>String(Math.round(+v||0));
+const fmt1 = v=>{const x=Math.round((+v||0)*10)/10;return Number.isInteger(x)?String(x):x.toFixed(1).replace('.',',');};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const uid = ()=>(window.crypto&&crypto.randomUUID)?crypto.randomUUID():'id-'+Date.now().toString(36)+Math.random().toString(36).slice(2,10);
 const todayISO = ()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10);};
@@ -434,49 +491,90 @@ const I = {
   pin:'<path d="M12 17v5M9 11V4h6v7l3 3v3H6v-3z"/>', x:'<path d="M18 6 6 18M6 6l12 12"/>', check:'<path d="M20 6 9 17l-5-5"/>',
   zap:'<path d="M13 2 3 14h9l-1 8 10-12h-9z"/>', cloud:'<path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9z"/>',
   download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>', upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>',
-  history:'<path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/>', score:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',
-  refresh:'<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>'
+  score:'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',
+  refresh:'<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>',
+  users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  chev:'<path d="m6 9 6 6 6-6"/>', link:'<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>',
+  login:'<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/>', spark:'<path d="M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.4z"/><path d="M19 3v4M17 5h4"/>'
 };
 const fmtDate = (iso,opt)=>{try{return new Date(iso+'T12:00:00').toLocaleDateString('tr-TR',opt||{day:'numeric',month:'long',year:'numeric',weekday:'long'});}catch(e){return iso;}};
 const shortName = n=>{const p=String(n||'').trim().split(/\s+/);return p.length>1?`${p[0]} ${p[p.length-1][0]}.`:p[0];};
 const initials = n=>String(n||'?').trim().split(/\s+/).map(x=>x[0]).slice(0,2).join('').toLocaleUpperCase('tr');
-const scoreColor = v=>v>=8?'#3ddc84':v>=6?'#a3e635':v>=4?'#f5b301':'#ef4444';
+const scoreColor = v=>v>=80?'#3ddc84':v>=65?'#a3e635':v>=50?'#f5b301':'#ef4444';
 
 /* ================== Durum ================== */
+const G = {list:[], code:null, id:null, name:''};      // aktif grup
 const S = {
   players:[], matches:[], attendance:{}, settings:clone(DEFAULT_SETTINGS),
-  draft:{date:todayISO(), selected:[]}, current:null, sb:{url:'',key:''}
+  draft:{date:todayISO(), selected:[]}, current:null
 };
-const UI = {view:'oyuncular', pSearch:'', pSort:'name', mSearch:'', onlySel:false, pitchView:'both', swapFrom:null, animate:false, openHist:null, syncState:'local', confirmCb:null, editing:null};
+const UI = {view:'oyuncular', pSearch:'', pSort:'name', mSearch:'', onlySel:false, pitchView:'both', swapFrom:null, animate:false, openHist:null, syncState:'local', confirmCb:null, editing:null, lastErr:null};
+const dataKey = ()=>'hsp2_data_'+G.code;
 
+function persistGroups(){ try{localStorage.setItem(LS_GROUPS,JSON.stringify({list:G.list,current:G.code}));}catch(e){} }
+function loadGroups(){ try{const d=JSON.parse(localStorage.getItem(LS_GROUPS)||'null'); if(d){G.list=d.list||[]; const g=G.list.find(x=>x.code===d.current); if(g) Object.assign(G,{code:g.code,id:g.id,name:g.name});}}catch(e){} }
 function persist(){
-  try{localStorage.setItem(LS_KEY, JSON.stringify({players:S.players,matches:S.matches,attendance:S.attendance,settings:S.settings,draft:S.draft,current:S.current,sb:S.sb}));}catch(e){}
+  if(!G.code) return;
+  try{localStorage.setItem(dataKey(), JSON.stringify({players:S.players,matches:S.matches,attendance:S.attendance,settings:S.settings,draft:S.draft,current:S.current}));}catch(e){}
 }
 function loadLocal(){
-  try{const raw=localStorage.getItem(LS_KEY); if(!raw) return false; const d=JSON.parse(raw);
-    Object.assign(S,{players:d.players||[],matches:d.matches||[],attendance:d.attendance||{},settings:Object.assign(clone(DEFAULT_SETTINGS),d.settings||{}),draft:d.draft||S.draft,current:d.current||null,sb:d.sb||{url:'',key:''}});
+  Object.assign(S,{players:[],matches:[],attendance:{},settings:clone(DEFAULT_SETTINGS),draft:{date:todayISO(),selected:[]},current:null});
+  try{const raw=localStorage.getItem(dataKey()); if(!raw) return false; const d=JSON.parse(raw);
+    Object.assign(S,{players:(d.players||[]).map(normPlayer),matches:d.matches||[],attendance:d.attendance||{},settings:Object.assign(clone(DEFAULT_SETTINGS),d.settings||{}),draft:d.draft||S.draft,current:d.current||null});
     S.settings.weights=Object.assign(clone(DEFAULT_SETTINGS.weights),S.settings.weights||{});
     return true;
   }catch(e){return false;}
 }
 const getP = id=>S.players.find(p=>p.id===id);
 
+/* ================== Yapay zeka reyting motoru ==================
+   Oyuncunun 11 özelliğinden her mevki için ağırlıklı reyting üretir,
+   en iyi mevkisi + çok yönlülüğü + fiziksel durumuyla genel puanı (1–99) hesaplar. */
+const LEGACY_POS = {DEF:['STP','BEK'],MID:['OS'],FWD:['FV'],GK:['GK']};
+function normPlayer(p){
+  p=Object.assign({},p);
+  const pos=[]; (p.positions||[]).forEach(c=>{ if(POSM[c]) pos.push(c); else (LEGACY_POS[c]||[]).forEach(x=>pos.push(x)); });
+  p.positions=[...new Set(pos)];
+  ['gk','def','fullback','mid','winger','fwd','stamina','passing','technique','speed','shooting'].forEach(k=>{ let v=p[k]; if(v===null||v===undefined||v==='') v=50; p[k]=clamp(Math.round(+v),1,99); });
+  return p;
+}
+let AIC = new WeakMap();
+function resetAI(){ AIC = new WeakMap(); }
+function posRating(p,c){ let s=0; for(const [k,w] of Object.entries(POS_W[c])) s+=w*(+p[k]||1); return s; }
+function aiRate(p){
+  const r=POS.map(x=>({c:x.c,v:posRating(p,x.c)})).sort((a,b)=>b.v-a.v);
+  const pos=p.positions||[];
+  const own=r.filter(x=>pos.includes(x.c));
+  const best=own[0]||r[0];
+  const second=(own[1]||r.find(x=>x.c!==best.c));
+  const phys=((+p.stamina||1)+(+p.speed||1))/2;
+  const overall=clamp(Math.round(0.78*best.v+0.12*second.v+0.10*phys),1,99);
+  return {overall,best:best.c,ratings:Object.fromEntries(r.map(x=>[x.c,Math.round(x.v)])),order:r.map(x=>x.c)};
+}
+function ai(p){
+  let c=AIC.get(p); if(c) return c;
+  const base=aiRate(p); const pen=1-S.settings.offPenalty/100; const pos=p.positions||[];
+  const line={};
+  ROLES.forEach(L=>{ let best=null; LINE_SUBS[L].forEach(([sub,f])=>{ let v=posRating(p,sub)*f; if(!pos.includes(sub)) v*=pen; if(!best||v>best.v) best={v,sub}; }); line[L]=best; });
+  c=Object.assign(base,{line}); AIC.set(p,c); return c;
+}
+const overallOf = p=>ai(p).overall;
+function roleScore(p,role){ return ai(p).line[role].v; }
+function subOf(p,role){ return ai(p).line[role].sub; }
+const inLine = (p,role)=>LINE_SUBS[role].some(([s])=>(p.positions||[]).includes(s));
+
 /* ================== Supabase (REST) adaptörü ================== */
 const Cloud = {
-  validUrl(u){return /^https:\/\/[a-z0-9-]+\.supabase\.(co|in)$/i.test(String(u||'').trim().replace(/\/+$/,''));},
-  validKey(k){k=String(k||'').trim();return /^eyJ[\w-]+\.[\w-]+\.[\w-]+$/.test(k)||/^sb_publishable_\w+$/.test(k);},
-  cfg(){ // Geçersiz (ör. tarayıcının otomatik doldurduğu) değerler yok sayılır, gömülü ayar kullanılır
-    const own=this.validUrl(S.sb.url)&&this.validKey(S.sb.key);
-    return {url:(own?S.sb.url:APP_CONFIG.SUPABASE_URL||'').trim().replace(/\/+$/,''), key:(own?S.sb.key:APP_CONFIG.SUPABASE_ANON_KEY||'').trim()};},
-  get on(){const c=this.cfg();return !!(c.url&&c.key);},
-  async req(path,{method='GET',body,prefer}={}){
+  cfg(){return {url:APP_CONFIG.SUPABASE_URL.replace(/\/+$/,''), key:APP_CONFIG.SUPABASE_ANON_KEY};},
+  get on(){const c=this.cfg();return !!(c.url&&c.key&&G.code);},
+  async req(path,{method='GET',body,prefer,code}={}){
     const {url,key}=this.cfg();
     let lastErr;
     for(let attempt=0;attempt<3;attempt++){
       let r;
       try{
         const ctl=new AbortController(); const tm=setTimeout(()=>ctl.abort(),15000);
-        r=await fetch(`${url}/rest/v1/${path}`,{method,body,signal:ctl.signal,cache:'no-store',headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':'application/json',Prefer:prefer||'return=minimal'}});
+        r=await fetch(`${url}/rest/v1/${path}`,{method,body,signal:ctl.signal,cache:'no-store',headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':'application/json','x-group-code':code||G.code||'',Prefer:prefer||'return=minimal'}});
         clearTimeout(tm);
       }catch(e){ lastErr=Object.assign(new Error('Ağ bağlantısı kurulamadı'),{network:true}); await new Promise(z=>setTimeout(z,800*(attempt+1))); continue; }
       if(r.ok){ const t=await r.text(); return t?JSON.parse(t):null; }
@@ -491,27 +589,30 @@ const Cloud = {
   upsert(t,rows,conflict='id'){return this.req(`${t}?on_conflict=${conflict}`,{method:'POST',body:JSON.stringify(rows),prefer:'resolution=merge-duplicates,return=minimal'});},
   del(t,col,val){return this.req(`${t}?${col}=eq.${encodeURIComponent(val)}`,{method:'DELETE'});}
 };
-const pToRow = p=>({id:p.id,name:p.name,overall:p.overall,stamina:p.stamina,gk:p.gk,def:p.def,mid:p.mid,fwd:p.fwd,positions:p.positions,
-  speed:p.speed??null,passing:p.passing??null,shooting:p.shooting??null,defending:p.defending??null,active:p.active!==false,created_at:p.createdAt||new Date().toISOString(),updated_at:new Date().toISOString()});
-const pFromRow = r=>({id:r.id,name:r.name,overall:+r.overall,stamina:+r.stamina,gk:+r.gk,def:+r.def,mid:+r.mid,fwd:+r.fwd,positions:r.positions||[],
-  speed:r.speed??null,passing:r.passing??null,shooting:r.shooting??null,defending:r.defending??null,active:r.active!==false,createdAt:r.created_at});
-const mToRow = m=>({id:m.id,match_date:m.date,player_ids:m.playerIds,team_a:m.teamA,team_b:m.teamB,metrics:m.metrics,score_a:m.scoreA??null,score_b:m.scoreB??null,note:m.note||null,created_at:m.createdAt});
+const pToRow = p=>({id:p.id,group_id:G.id,name:p.name,overall:overallOf(p),stamina:p.stamina,gk:p.gk,def:p.def,fullback:p.fullback,mid:p.mid,winger:p.winger,fwd:p.fwd,positions:p.positions,
+  speed:p.speed,passing:p.passing,shooting:p.shooting,technique:p.technique,active:p.active!==false,created_at:p.createdAt||new Date().toISOString(),updated_at:new Date().toISOString()});
+const pFromRow = r=>normPlayer({id:r.id,name:r.name,stamina:r.stamina,gk:r.gk,def:r.def,fullback:r.fullback,mid:r.mid,winger:r.winger,fwd:r.fwd,positions:r.positions||[],
+  speed:r.speed,passing:r.passing,shooting:r.shooting,technique:r.technique,active:r.active!==false,createdAt:r.created_at});
+const mToRow = m=>({id:m.id,group_id:G.id,match_date:m.date,player_ids:m.playerIds,team_a:m.teamA,team_b:m.teamB,metrics:m.metrics,score_a:m.scoreA??null,score_b:m.scoreB??null,note:m.note||null,created_at:m.createdAt});
 const mFromRow = r=>({id:r.id,date:r.match_date,playerIds:r.player_ids||[],teamA:r.team_a,teamB:r.team_b,metrics:r.metrics,scoreA:r.score_a,scoreB:r.score_b,note:r.note,createdAt:r.created_at});
+const attRow = (d,ids)=>({group_id:G.id,match_date:d,player_ids:ids});
+const setRow = ()=>({id:G.id,group_id:G.id,data:S.settings});
 
 function setSync(state,msg){
   UI.syncState=state; const el=$('#sync'); if(!el) return;
   el.className='sync '+(state==='ok'?'ok':state==='err'?'err':'');
   const q=Q.ops.length;
-  el.querySelector('span').textContent = msg || (state==='ok'?'Supabase senkron':state==='err'?'Senkron hatası':state==='wait'?`Bağlantı bekleniyor${q?` (${q})`:''}`:state==='busy'?'Senkronize ediliyor…':'Yerel kayıt');
+  el.querySelector('span').textContent = msg || (state==='ok'?'Senkron':state==='err'?'Senkron hatası':state==='wait'?`Bağlantı bekleniyor${q?` (${q})`:''}`:state==='busy'?'Senkronize ediliyor…':'Yerel kayıt');
   el.title = UI.lastErr ? 'Son hata: '+UI.lastErr : '';
 }
 /* Yazma kuyruğu: işlemler sırayla gönderilir; bağlantı koparsa kaybolmaz, otomatik tekrar denenir */
 const Q={ops:[],running:false,timer:null,delay:3000};
 function cloud(fn){
   if(!Cloud.on) return;
-  Q.ops.push(fn); markUnsynced(true); flushQueue();
+  const code=G.code;
+  Q.ops.push(()=>code===G.code?fn():Promise.resolve()); markUnsynced(true); flushQueue();
 }
-function markUnsynced(v){ try{ v?localStorage.setItem(LS_KEY+'_unsynced','1'):localStorage.removeItem(LS_KEY+'_unsynced'); }catch(e){} }
+function markUnsynced(v){ try{ const k='hsp2_unsynced_'+G.code; v?localStorage.setItem(k,'1'):localStorage.removeItem(k); }catch(e){} }
 async function flushQueue(){
   if(Q.running||!Q.ops.length) return;
   Q.running=true; clearTimeout(Q.timer); setSync('busy');
@@ -519,10 +620,7 @@ async function flushQueue(){
     try{ await Q.ops[0](); Q.ops.shift(); Q.delay=3000; UI.lastErr=null; }
     catch(e){
       console.warn('Supabase',e); UI.lastErr=e.message;
-      if(e.network){ // geçici bağlantı sorunu: daha sonra tekrar dene
-        Q.running=false; setSync('wait');
-        Q.timer=setTimeout(flushQueue,Q.delay); Q.delay=Math.min(Q.delay*2,30000); return;
-      }
+      if(e.network){ Q.running=false; setSync('wait'); Q.timer=setTimeout(flushQueue,Q.delay); Q.delay=Math.min(Q.delay*2,30000); return; }
       Q.ops.shift(); setSync('err'); toast('Kaydedilemedi: '+e.message.slice(0,80),'err');
     }
   }
@@ -531,54 +629,91 @@ async function flushQueue(){
 window.addEventListener('online',()=>{ Q.delay=3000; flushQueue(); });
 async function cloudPull(silent){
   if(!Cloud.on) return false;
-  if(Q.ops.length||Q.running){ flushQueue(); return false; } // bekleyen yazma varken çekme yapma
+  if(Q.ops.length||Q.running){ flushQueue(); return false; }
+  const code=G.code;
   setSync('busy');
   try{
     const [pl,ma,se,at]=await Promise.all([Cloud.select('players'),Cloud.select('matches'),Cloud.select('app_settings'),Cloud.select('attendance')]);
-    if(pl&&pl.length){
-      S.players=pl.map(pFromRow);
+    if(code!==G.code) return false;
+    if((pl&&pl.length)||!S.players.length){
+      S.players=(pl||[]).map(pFromRow);
       S.matches=(ma||[]).map(mFromRow);
-      const st=(se||[]).find(x=>x.id==='default'); if(st&&st.data) S.settings=Object.assign(clone(DEFAULT_SETTINGS),st.data);
+      const st=(se||[])[0]; if(st&&st.data){ S.settings=Object.assign(clone(DEFAULT_SETTINGS),st.data); S.settings.weights=Object.assign(clone(DEFAULT_SETTINGS.weights),S.settings.weights||{}); }
       S.attendance={}; (at||[]).forEach(a=>S.attendance[a.match_date]=a.player_ids||[]);
+      resetAI();
       S.draft.selected=S.draft.selected.filter(id=>getP(id));
       if(S.current&&!S.current.playerIds.every(id=>getP(id))&&!S.current.matchId) S.current=null;
       if(S.current) computeMetrics(S.current);
-      persist(); setSync('ok'); if(!silent) toast('Veriler Supabase\'den yüklendi','ok');
+      persist(); setSync('ok'); if(!silent) toast('Veriler güncellendi','ok');
       const busy=$('#modal-root').innerHTML||(document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName));
       if(!busy) render(); return true;
     }
-    if(S.players.length){ await cloudPushAll(true); return true; }
-    setSync('ok'); if(!silent) toast('Bulut veritabanı boş.'); return false;
-  }catch(e){console.warn(e);UI.lastErr=e.message;setSync(e.network?'wait':'err');if(!silent) toast('Supabase bağlantısı kurulamadı: '+e.message.slice(0,90),'err');return false;}
+    await cloudPushAll(true); return true;
+  }catch(e){console.warn(e);UI.lastErr=e.message;setSync(e.network?'wait':'err');if(!silent) toast('Bağlantı kurulamadı: '+e.message.slice(0,90),'err');return false;}
 }
 async function cloudPushAll(quiet){
-  if(!Cloud.on){toast('Önce Supabase bilgilerini girin','err');return;}
+  if(!Cloud.on){return;}
   setSync('busy');
   try{
     if(S.players.length) await Cloud.upsert('players',S.players.map(pToRow));
     if(S.matches.length) await Cloud.upsert('matches',S.matches.map(mToRow));
-    await Cloud.upsert('app_settings',[{id:'default',data:S.settings}]);
-    const at=Object.entries(S.attendance).map(([d,ids])=>({match_date:d,player_ids:ids}));
-    if(at.length) await Cloud.upsert('attendance',at,'match_date');
-    setSync('ok'); if(!quiet) toast('Tüm veriler Supabase\'e yüklendi','ok');
+    await Cloud.upsert('app_settings',[setRow()]);
+    const at=Object.entries(S.attendance).map(([d,ids])=>attRow(d,ids));
+    if(at.length) await Cloud.upsert('attendance',at,'group_id,match_date');
+    setSync('ok'); if(!quiet) toast('Tüm veriler buluta yüklendi','ok');
     markUnsynced(false);
   }catch(e){console.warn(e);UI.lastErr=e.message;setSync(e.network?'wait':'err');if(!quiet) toast('Yükleme başarısız: '+e.message.slice(0,90),'err');}
 }
 
+/* ================== Gruplar ================== */
+const CODE_ABC='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const newCode=()=>{const a=new Uint32Array(8);crypto.getRandomValues(a);return Array.from(a,x=>CODE_ABC[x%CODE_ABC.length]).join('');};
+const normCode=c=>String(c||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+const inviteLink=code=>`${location.origin}${location.pathname}?g=${code}`;
+async function joinGroup(code,{silent}={}){
+  code=normCode(code); if(code.length<4){toast('Geçersiz grup kodu','err');return false;}
+  let g=null;
+  try{ const r=await Cloud.req('groups?select=id,name,code',{code}); g=(r||[])[0]; }
+  catch(e){ toast(e.network?'İnternet bağlantısı yok, tekrar deneyin':'Grup bulunamadı','err'); return false; }
+  if(!g){ toast('Bu koda ait grup bulunamadı','err'); return false; }
+  if(!G.list.some(x=>x.code===g.code)) G.list.push({id:g.id,name:g.name,code:g.code});
+  await switchGroup(g.code);
+  if(!silent) toast(`"${g.name}" grubuna katıldınız`,'ok');
+  return true;
+}
+async function createGroup(name,withDemo){
+  name=String(name||'').trim(); if(name.length<2){toast('Grup adı girin','err');return false;}
+  const code=newCode();
+  let g;
+  try{ const r=await Cloud.req('groups',{method:'POST',code,body:JSON.stringify([{name,code}]),prefer:'return=representation'}); g=(r||[])[0]; }
+  catch(e){ toast('Grup oluşturulamadı: '+e.message.slice(0,80),'err'); return false; }
+  G.list.push({id:g.id,name:g.name,code:g.code});
+  await switchGroup(g.code,{fresh:true});
+  if(withDemo){ seedDemo(); persist(); await cloudPushAll(true); render(); }
+  else { await Cloud.upsert('app_settings',[setRow()]).catch(()=>{}); }
+  return true;
+}
+async function switchGroup(code,{fresh}={}){
+  const g=G.list.find(x=>x.code===code); if(!g) return;
+  persist();
+  Object.assign(G,{code:g.code,id:g.id,name:g.name}); persistGroups();
+  Q.ops=[]; resetAI(); loadLocal(); UI.swapFrom=null; UI.openHist=null;
+  render();
+  if(!fresh) await cloudPull(true);
+}
+function leaveGroup(code){
+  G.list=G.list.filter(x=>x.code!==code);
+  try{localStorage.removeItem('hsp2_data_'+code);}catch(e){}
+  if(G.code===code){ const n=G.list[0]; if(n){ switchGroup(n.code); } else { Object.assign(G,{code:null,id:null,name:''}); persistGroups(); render(); } }
+  else { persistGroups(); render(); }
+}
+
 /* ================== Dengeleme Motoru ==================
-   1) Her 7'li alt küme için oyuncu→mevki ataması dinamik programlama ile
-      optimize edilir (her izinli diziliş denenir, en yüksek mevki uyumu seçilir).
-   2) 14 oyuncudan oluşan tüm benzersiz bölünmeler (C(14,7)/2 = 1716) değerlendirilir.
-   3) Ağırlıklı maliyet fonksiyonu (güç, mevki dengesi, kondisyon, kaleci) minimize edilir.
+   1) Her 7'li alt küme için oyuncu→hat ataması dinamik programlama ile optimize edilir
+      (izinli dizilişlerin hepsi denenir, en yüksek mevki uyumu seçilir).
+   2) 14 oyuncunun tüm benzersiz bölünmeleri (C(14,7)/2 = 1716) değerlendirilir.
+   3) Ağırlıklı maliyet (güç, mevki dengesi, kondisyon, kaleci) minimize edilir.
    ====================================================== */
-function roleScore(p,role){
-  const v=+p[ROLE_KEY[role]]||1;
-  return (p.positions||[]).includes(role)? v : v*(1-S.settings.offPenalty/100);
-}
-function effOverall(p){
-  const o=OPT_ATTRS.map(([k])=>p[k]).filter(v=>v!==null&&v!==undefined&&v!=='').map(Number);
-  return o.length? p.overall*0.75+avg(o)*0.25 : +p.overall;
-}
 function parseF(name){const [d,m,f]=name.split('-').map(Number);return {d,m,f,name};}
 function formationsFor(n){
   const of=n-1, st=S.settings;
@@ -591,7 +726,6 @@ function formationsFor(n){
   for(let d=min;d<=of;d++)for(let m=min;m<=of-d;m++){const f=of-d-m;if(f>=min&&f<=3)out.push({d,m,f,name:`${d}-${m}-${f}`});}
   return out.length?out:[{d:Math.max(of,0),m:0,f:0,name:`${Math.max(of,0)}-0-0`}];
 }
-// DP: oyuncuları kapasiteleri belli mevkilere en yüksek toplam puanla dağıt
 function assign(sc,fm){
   const caps=[sc.length>0?1:0,fm.d,fm.m,fm.f];
   if(caps[0]+caps[1]+caps[2]+caps[3]!==sc.length) return null;
@@ -617,14 +751,14 @@ function optimizeRoles(ps){
   let best=null; const def=S.settings.defaultFormation;
   for(const fm of formationsFor(ps.length)){
     const r=assign(sc,fm); if(!r) continue;
-    const v=r.v+(fm.name===def?1.0:0); // varsayılan dizilişe hafif öncelik
+    const v=r.v+(fm.name===def?10:0); // varsayılan dizilişe hafif öncelik
     if(!best||v>best.v) best={v,roles:r.roles,formation:fm.name};
   }
   return best||{roles:ps.map((_,i)=>i===0?'GK':'MID'),formation:'—'};
 }
 function teamStats(ps,roles){
   const n=ps.length; const vals=ps.map((p,i)=>roleScore(p,roles[i]));
-  const pw=ps.map((p,i)=>0.4*effOverall(p)+0.6*vals[i]);
+  const pw=ps.map((p,i)=>0.4*overallOf(p)+0.6*vals[i]);
   const total=pw.reduce((a,b)=>a+b,0);
   const lines={};
   ['DEF','MID','FWD'].forEach(l=>{const v=vals.filter((_,i)=>roles[i]===l);lines[l]={count:v.length,avg:avg(v),sum:v.reduce((a,b)=>a+b,0)};});
@@ -638,10 +772,10 @@ function compareTeams(A,B){
   const w=weightsNorm();
   const lineDiff=avg(['DEF','MID','FWD'].map(l=>Math.abs(A.lines[l].avg-B.lines[l].avg)));
   const comps={
-    power:Math.abs(A.total-B.total)/TEAM_SIZE,
-    pos:Math.abs(A.outAvg-B.outAvg)+0.5*lineDiff,
-    stamina:Math.abs(A.stamina-B.stamina),
-    gk:Math.abs(A.gk-B.gk)/4
+    power:Math.abs(A.total-B.total)/TEAM_SIZE/SC,
+    pos:(Math.abs(A.outAvg-B.outAvg)+0.5*lineDiff)/SC,
+    stamina:Math.abs(A.stamina-B.stamina)/SC,
+    gk:Math.abs(A.gk-B.gk)/4/SC
   };
   const cost=w.power*comps.power+w.pos*comps.pos+w.stamina*comps.stamina+w.gk*comps.gk;
   return {cost,comps,balance:clamp(100-cost*38,0,100),powerDiff:Math.abs(A.total-B.total)};
@@ -669,7 +803,7 @@ function runChunk(ctx,from,to){
     const a=ctx.list[j]; const set=new Set(a); const b=[];
     for(let i=0;i<ctx.n;i++) if(!set.has(i)) b.push(i);
     const A=evalIdx(ctx,a),B=evalIdx(ctx,b); const cmp=compareTeams(A.st,B.st);
-    ctx.results.push({A,B,cmp,score:cmp.cost-0.002*(A.st.posFit+B.st.posFit)});
+    ctx.results.push({A,B,cmp,score:cmp.cost-0.002*(A.st.posFit+B.st.posFit)/SC});
   }
 }
 const splitKey=(res,ps)=>{const firstId=ps[0].id;const t=[res.A,res.B].find(t=>t.idxs.some(i=>ps[i].id===firstId));return t.idxs.map(i=>ps[i].id).sort().join('|');};
@@ -682,17 +816,19 @@ function pickResult(ctx,prevKey){
   if(cand.length) return cand[Math.floor(Math.random()*cand.length)];
   return R.find(r=>splitKey(r,ctx.ps)!==prevKey)||R[0];
 }
-const snap = p=>({name:p.name,overall:p.overall,stamina:p.stamina,gk:p.gk,def:p.def,mid:p.mid,fwd:p.fwd,positions:p.positions,speed:p.speed??null,passing:p.passing??null,shooting:p.shooting??null,defending:p.defending??null});
+const SNAP_KEYS=['name','gk','def','fullback','mid','winger','fwd','stamina','passing','technique','speed','shooting','positions'];
+const snap = p=>Object.fromEntries(SNAP_KEYS.map(k=>[k,p[k]]));
 function buildTeam(t,ps,pins){
   return {formation:t.formation,players:t.idxs.map((i,j)=>({id:ps[i].id,role:t.roles[j],pinned:pins.has(ps[i].id),snap:snap(ps[i])}))};
 }
-const teamPlayer = e=>getP(e.id)||Object.assign({id:e.id},e.snap||{name:'Silinmiş oyuncu',overall:5,stamina:5,gk:5,def:5,mid:5,fwd:5,positions:[]});
+const SNAPC=new WeakMap();
+const teamPlayer = e=>{ const live=getP(e.id); if(live) return live; let s=SNAPC.get(e); if(!s){ s=normPlayer(Object.assign({id:e.id,name:'Silinmiş oyuncu'},e.snap||{})); SNAPC.set(e,s);} return s; };
 function statsOf(team){const ps=team.players.map(teamPlayer);return teamStats(ps,team.players.map(e=>e.role));}
 function computeMetrics(cur){
   const A=statsOf(cur.teamA),B=statsOf(cur.teamB),cmp=compareTeams(A,B);
   cur.teamA.formation=A.formation; cur.teamB.formation=B.formation;
   const slim=s=>({n:s.n,total:s.total,power:s.power,stamina:s.stamina,gk:s.gk,formation:s.formation,posFit:s.posFit,outAvg:s.outAvg,lines:s.lines});
-  cur.metrics={A:slim(A),B:slim(B),balance:cmp.balance,cost:cmp.cost,comps:cmp.comps,powerDiff:cmp.powerDiff};
+  cur.metrics={A:slim(A),B:slim(B),balance:cmp.balance,cost:cmp.cost,comps:cmp.comps,powerDiff:cmp.powerDiff,scale:99};
   return cur.metrics;
 }
 function reoptimizeTeam(team){
@@ -700,47 +836,41 @@ function reoptimizeTeam(team){
   team.players.forEach((e,i)=>e.role=o.roles[i]); team.formation=o.formation;
 }
 
-/* ================== Demo verisi ================== */
+/* ================== Demo verisi (yeni gruplar için) ================== */
+// [ad, KL, STP, BEK, OS, KNT, FV, KON, PAS, TEK, HIZ, ŞUT, mevkiler]
 const DEMO = [
- ['Emre Yılmaz',8,7,3,6,8,7,'MID,FWD',{speed:7,passing:9,shooting:7,defending:5}],
- ['Burak Kaya',7,8,2,8,6,4,'DEF,MID'],
- ['Mert Demir',6,6,9,4,3,2,'GK'],
- ['Can Öztürk',9,8,3,5,8,9,'FWD,MID',{speed:9,passing:8,shooting:9,defending:4}],
- ['Oğuz Şahin',5,5,7,5,4,3,'GK,DEF'],
- ['Serkan Arslan',7,6,2,7,7,5,'DEF,MID'],
- ['Hakan Çelik',6,4,4,7,5,3,'DEF'],
- ['Kerem Aydın',8,9,2,5,7,8,'FWD,MID',{speed:9,passing:7,shooting:8,defending:5}],
- ['Volkan Koç',5,6,3,6,5,4,'DEF,MID'],
- ['Tolga Kurt',7,7,2,4,6,8,'FWD'],
- ['Onur Polat',6,7,3,5,7,5,'MID'],
- ['Selim Erdem',4,5,6,4,3,3,'GK'],
- ['Barış Güneş',7,6,3,8,5,3,'DEF',{speed:6,passing:6,shooting:4,defending:9}],
- ['Ufuk Aksoy',6,8,2,6,6,6,'MID,DEF,FWD'],
- ['Murat Tekin',5,4,5,5,5,5,'DEF,MID'],
- ['Deniz Kılıç',8,7,2,6,9,6,'MID',{speed:6,passing:9,shooting:7,defending:6}],
- ['Alper Özdemir',6,5,2,4,5,7,'FWD'],
- ['Cem Yıldız',7,9,3,7,7,6,'MID,DEF'],
- ['Ozan Acar',5,6,2,3,5,6,'FWD,MID'],
- ['Eren Doğan',9,7,4,9,7,5,'DEF,MID',{speed:7,passing:7,shooting:5,defending:9}],
- ['Kaan Bulut',4,5,3,4,4,4,'DEF'],
- ['Fatih Uçar',6,6,8,5,3,2,'GK,DEF'],
- ['Yusuf Karaca',7,8,2,5,6,8,'FWD'],
- ['Gökhan Aslan',5,7,3,6,5,4,'DEF,MID'],
- ['Arda Şimşek',6,6,2,4,7,6,'MID,FWD']
+ ['Emre Yılmaz',30,58,62,82,78,74,72,86,84,74,72,'OS,KNT'],
+ ['Burak Kaya',22,80,76,62,55,40,80,64,58,70,42,'STP,BEK'],
+ ['Mert Demir',88,40,35,32,28,24,62,58,50,52,30,'GK'],
+ ['Can Öztürk',28,48,52,80,86,90,80,80,88,90,90,'FV,KNT'],
+ ['Oğuz Şahin',72,52,48,40,34,30,52,48,44,46,32,'GK,STP'],
+ ['Serkan Arslan',20,72,70,72,60,48,62,70,64,60,50,'STP,OS'],
+ ['Hakan Çelik',36,74,60,52,40,30,44,54,46,48,30,'STP'],
+ ['Kerem Aydın',22,50,58,72,84,82,90,72,80,90,80,'KNT,FV'],
+ ['Volkan Koç',28,62,64,54,48,40,60,56,50,58,40,'BEK,OS'],
+ ['Tolga Kurt',20,40,44,60,70,82,70,62,70,76,84,'FV'],
+ ['Onur Polat',26,50,52,72,64,52,70,74,68,62,54,'OS'],
+ ['Selim Erdem',62,40,36,30,28,26,50,44,40,42,28,'GK'],
+ ['Barış Güneş',28,84,74,54,46,32,62,60,48,62,40,'STP,BEK'],
+ ['Ufuk Aksoy',22,60,66,62,64,60,80,62,62,70,58,'BEK,OS,KNT'],
+ ['Murat Tekin',48,52,50,50,46,48,40,50,48,42,46,'STP,OS'],
+ ['Deniz Kılıç',22,60,56,90,70,62,70,92,86,64,72,'OS'],
+ ['Alper Özdemir',20,40,42,50,62,74,52,52,60,66,72,'FV'],
+ ['Cem Yıldız',28,70,74,72,66,58,90,72,66,72,56,'OS,BEK'],
+ ['Ozan Acar',20,32,40,52,62,62,60,54,60,64,60,'KNT,FV'],
+ ['Eren Doğan',38,90,82,70,56,48,70,72,66,70,50,'STP,BEK'],
+ ['Kaan Bulut',30,44,46,40,38,36,50,40,38,46,34,'STP'],
+ ['Fatih Uçar',80,52,46,30,26,22,60,50,40,48,24,'GK,STP'],
+ ['Yusuf Karaca',20,48,50,58,72,82,80,60,68,80,82,'FV,KNT'],
+ ['Gökhan Aslan',28,60,62,52,46,40,70,54,48,60,40,'BEK,STP'],
+ ['Arda Şimşek',20,40,46,70,72,60,60,70,72,66,60,'OS,KNT']
 ];
 function seedDemo(){
-  S.players=DEMO.map(([name,overall,stamina,gk,def,mid,fwd,pos,opt])=>Object.assign({id:uid(),name,overall,stamina,gk,def,mid,fwd,positions:pos.split(','),speed:null,passing:null,shooting:null,defending:null,active:true,createdAt:new Date().toISOString()},opt||{}));
+  S.players=DEMO.map(([name,gk,def,fullback,mid,winger,fwd,stamina,passing,technique,speed,shooting,pos])=>normPlayer({id:uid(),name,gk,def,fullback,mid,winger,fwd,stamina,passing,technique,speed,shooting,positions:pos.split(','),active:true,createdAt:new Date().toISOString()}));
+  resetAI();
   const byName=n=>S.players.find(p=>p.name===n).id;
-  // Bu haftanın taslak kadrosu (14 kişi, 2 kaleci)
   S.draft={date:todayISO(),selected:['Emre Yılmaz','Burak Kaya','Mert Demir','Can Öztürk','Serkan Arslan','Kerem Aydın','Tolga Kurt','Onur Polat','Barış Güneş','Deniz Kılıç','Cem Yıldız','Eren Doğan','Fatih Uçar','Yusuf Karaca'].map(byName)};
-  // Geçen haftanın örnek maçı
-  const d=new Date(); d.setDate(d.getDate()-7); d.setMinutes(d.getMinutes()-d.getTimezoneOffset());
-  const lastDate=d.toISOString().slice(0,10);
-  const lastIds=['Emre Yılmaz','Mert Demir','Can Öztürk','Oğuz Şahin','Hakan Çelik','Kerem Aydın','Volkan Koç','Tolga Kurt','Ufuk Aksoy','Deniz Kılıç','Alper Özdemir','Cem Yıldız','Gökhan Aslan','Arda Şimşek'].map(byName);
-  const ps=lastIds.map(getP); const ctx=makeCtx(ps); runChunk(ctx,0,ctx.list.length); const res=pickResult(ctx);
-  const m={id:uid(),date:lastDate,playerIds:lastIds,teamA:buildTeam(res.A,ps,new Set()),teamB:buildTeam(res.B,ps,new Set()),scoreA:6,scoreB:5,createdAt:new Date(d).toISOString()};
-  computeMetrics(m); S.matches=[m]; S.attendance={[lastDate]:lastIds};
-  S.current=null;
+  S.matches=[]; S.attendance={}; S.current=null;
 }
 
 /* ================== UI altyapısı ================== */
@@ -762,17 +892,68 @@ function confirmBox(title,text,okLabel,cb,danger=true){
 }
 async function copyText(t){
   try{await navigator.clipboard.writeText(t);toast('Panoya kopyalandı','ok');return true;}
-  catch(e){openModal('Metni Kopyala',`<textarea rows="12" readonly onclick="this.select()">${esc(t)}</textarea><p class="small muted">Metni seçip kopyalayabilirsiniz.</p>`);return false;}
+  catch(e){openModal('Metni Kopyala',`<textarea rows="8" readonly onclick="this.select()">${esc(t)}</textarea><p class="small muted">Metni seçip kopyalayabilirsiniz.</p>`);return false;}
 }
 
 function go(v){ if(location.hash!=='#'+v) location.hash=v; else {UI.view=v;render();} }
 function navHTML(){return VIEWS.map(v=>`<a href="#${v.id}" class="${UI.view===v.id?'on':''}">${icon(v.icon,18)}<span>${v.name}</span></a>`).join('');}
 function render(){
-  $('#tabs').innerHTML=navHTML(); $('#bnav').innerHTML=navHTML();
+  const has=!!G.code;
+  $('#tabs').innerHTML=has?navHTML():''; $('#bnav').innerHTML=has?navHTML():'';
+  $('#bnav').style.display=has?'':'none';
+  $('#grp').innerHTML=has?`${icon(I.users,16)}<span>${esc(G.name)}</span>${icon(I.chev,14)}`:'';
+  $('#grp').style.display=has?'':'none'; $('#sync').style.display=has?'':'none';
+  if(!has){ $('#app').innerHTML=vWelcome(); return; }
   const fn={oyuncular:vPlayers,mac:vMatch,takimlar:vTeams,gecmis:vHistory,ayarlar:vSettings}[UI.view]||vPlayers;
   $('#app').innerHTML=fn();
   if(UI.view==='takimlar') afterTeams();
-  if(UI.view==='gecmis') afterHistory();
+}
+
+/* ================== Görünüm: Karşılama / Gruplar ================== */
+function vWelcome(){
+  return `<div class="welcome">
+    <div class="hero">
+      <div class="hero-badge">${icon(I.spark,14)} Yapay zeka destekli takım dengeleme</div>
+      <h1>Halı sahada <em>dengeli</em> maçlar</h1>
+      <p>Oyuncularınızı ekleyin, yapay zeka her oyuncuya 99 üzerinden reyting versin; algoritma 1.716 kombinasyonu tarayıp en dengeli iki takımı kursun.</p>
+    </div>
+    <div class="welcome-grid">
+      <div class="card">
+        <h3>${icon(I.login,20)} Gruba Katıl</h3>
+        <p class="small muted" style="margin-bottom:12px">Arkadaşınızın paylaştığı davet kodunu girin.</p>
+        <div class="row" style="flex-wrap:nowrap"><input type="text" id="join-code" placeholder="AB12CD34" maxlength="12" autocomplete="off" spellcheck="false" style="text-transform:uppercase;letter-spacing:2px;font-weight:700"><button class="btn primary" data-act="join-do">Katıl</button></div>
+      </div>
+      <div class="card">
+        <h3>${icon(I.plus,20)} Yeni Grup Oluştur</h3>
+        <p class="small muted" style="margin-bottom:12px">Kendi halı saha grubunuzu kurun, davet linkiyle arkadaşlarınızı ekleyin.</p>
+        <input type="text" id="new-group" placeholder="Grup adı (örn. Cuma Akşamı)" maxlength="40" autocomplete="off" style="margin-bottom:10px">
+        <label class="row small muted" style="gap:8px;margin-bottom:12px"><input type="checkbox" id="new-demo"> Demo oyuncularla başla</label>
+        <button class="btn primary" data-act="create-do" style="width:100%">${icon(I.plus)} Grubu Oluştur</button>
+      </div>
+    </div>
+    ${G.list.length?`<div class="card" style="margin-top:16px"><h3>Gruplarım</h3><div class="glist">${G.list.map(g=>`<button class="gitem" data-act="grp-switch" data-code="${g.code}">${icon(I.users,16)} ${esc(g.name)}</button>`).join('')}</div></div>`:''}
+  </div>`;
+}
+function groupModal(){
+  const others=G.list.filter(g=>g.code!==G.code);
+  openModal('Gruplar',`
+    <div class="gcur">
+      <div class="small muted">Aktif grup</div>
+      <div style="font-family:var(--cond);font-size:28px;font-weight:800;text-transform:uppercase">${esc(G.name)}</div>
+      <div class="row" style="margin-top:8px"><span class="chip">Davet kodu <b style="color:var(--text);letter-spacing:1.5px">${G.code}</b></span></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn sm primary" data-act="grp-invite">${icon(I.link,16)} Davet Linkini Kopyala</button>
+        <button class="btn sm danger" data-act="grp-leave">Bu cihazda gruptan çık</button>
+      </div>
+      <p class="small muted" style="margin-top:10px">Davet linki veya kodu olan herkes bu grubun oyuncularını görebilir ve düzenleyebilir. Diğer gruplar birbirinin verisini göremez.</p>
+    </div>
+    ${others.length?`<div class="sect">Diğer gruplarım</div><div class="glist">${others.map(g=>`<button class="gitem" data-act="grp-switch" data-code="${g.code}">${icon(I.users,16)} ${esc(g.name)}</button>`).join('')}</div>`:''}
+    <div class="sect">Gruba katıl</div>
+    <div class="row" style="flex-wrap:nowrap"><input type="text" id="join-code" placeholder="Davet kodu" maxlength="12" autocomplete="off" spellcheck="false" style="text-transform:uppercase;letter-spacing:2px;font-weight:700"><button class="btn" data-act="join-do">Katıl</button></div>
+    <div class="sect">Yeni grup</div>
+    <input type="text" id="new-group" placeholder="Grup adı" maxlength="40" autocomplete="off">
+    <label class="row small muted" style="gap:8px"><input type="checkbox" id="new-demo"> Demo oyuncularla başla</label>
+    <button class="btn primary" data-act="create-do">${icon(I.plus)} Grubu Oluştur</button>`,'','sm');
 }
 
 /* ================== Görünüm: Oyuncular ================== */
@@ -782,18 +963,18 @@ function attendanceCount(id){
   S.matches.forEach(m=>{if(m.playerIds.includes(id))dates.add(m.date);});
   return dates.size;
 }
-function bar(lbl,v){return `<div class="bar"><span>${lbl}</span><div class="tr"><i style="width:${v*10}%;background:${scoreColor(v)}"></i></div><b>${v}</b></div>`;}
+function bar(lbl,v){return `<div class="bar"><span>${lbl}</span><div class="tr"><i style="width:${v/99*100}%;background:${scoreColor(v)}"></i></div><b>${v}</b></div>`;}
+const posChips = p=>POS.filter(x=>(p.positions||[]).includes(x.c)).map(x=>`<span class="rb r-${x.line}">${x.s}</span>`).join('');
 function playerCard(p,i){
-  const opts=OPT_ATTRS.filter(([k])=>p[k]!=null&&p[k]!=='');
+  const a=ai(p);
   return `<div class="pcard" style="animation-delay:${Math.min(i,20)*25}ms">
     <div class="pc-top">
       <div class="avatar">${esc(initials(p.name))}</div>
       <div class="pc-id"><div class="pc-name">${esc(p.name)}</div>
-        <div class="pc-pos">${ROLES.filter(r=>p.positions.includes(r)).map(r=>`<span class="rb r-${r}">${ROLE_SHORT[r]}</span>`).join('')||'<span class="small muted">Mevki yok</span>'}</div></div>
-      <div class="ovr"><b>${p.overall}</b><small>GENEL</small></div>
+        <div class="pc-pos">${posChips(p)||'<span class="small muted">Mevki yok</span>'}</div></div>
+      <div class="ovr" title="Yapay zeka genel reytingi"><b style="color:${scoreColor(a.overall)}">${a.overall}</b><small>${icon(I.spark,10)} ${POSM[a.best].s}</small></div>
     </div>
-    <div class="bars">${bar('KON',p.stamina)}${bar('KL',p.gk)}${bar('DF',p.def)}${bar('OS',p.mid)}${bar('FV',p.fwd)}</div>
-    ${opts.length?`<div class="opt-attrs">${opts.map(([k,l])=>`<span>${l} <b>${p[k]}</b></span>`).join('')}</div>`:''}
+    <div class="bars two">${POS.map(x=>bar(x.s,p[x.key])).join('')}${ATTRS.map(([k,,s])=>bar(s,p[k])).join('')}</div>
     <div class="pc-foot"><span>Katılım: <b style="color:var(--text)">${attendanceCount(p.id)}</b> maç</span>
       <div class="row"><button class="btn icon sm" data-act="edit-player" data-id="${p.id}" title="Düzenle">${icon(I.edit,16)}</button>
       <button class="btn icon sm danger" data-act="del-player" data-id="${p.id}" title="Sil">${icon(I.trash,16)}</button></div></div>
@@ -803,64 +984,79 @@ function filteredPlayers(){
   const q=UI.pSearch.trim().toLocaleLowerCase('tr');
   let arr=S.players.filter(p=>!q||p.name.toLocaleLowerCase('tr').includes(q));
   const s=UI.pSort;
-  arr.sort((a,b)=>s==='name'?a.name.localeCompare(b.name,'tr'):s==='att'?attendanceCount(b.id)-attendanceCount(a.id):(+b[s]-+a[s])||a.name.localeCompare(b.name,'tr'));
+  const val=(p)=>s==='overall'?overallOf(p):s==='att'?attendanceCount(p.id):+p[s];
+  arr.sort((a,b)=>s==='name'?a.name.localeCompare(b.name,'tr'):(val(b)-val(a))||a.name.localeCompare(b.name,'tr'));
   return arr;
 }
 function playersGridHTML(){
   const arr=filteredPlayers();
-  if(!S.players.length) return `<div class="empty"><div class="ico">⚽</div><h3>Henüz oyuncu yok</h3><p>Kadronuzu oluşturmak için ilk oyuncuyu ekleyin ya da demo veriyi yükleyin.</p><div class="row" style="justify-content:center"><button class="btn primary" data-act="new-player">${icon(I.plus)} Oyuncu Ekle</button><button class="btn" data-act="load-demo">Demo Veriyi Yükle</button></div></div>`;
+  if(!S.players.length) return `<div class="empty"><div class="ico">⚽</div><h3>Henüz oyuncu yok</h3><p>İlk oyuncuyu ekleyin; yapay zeka genel reytingini otomatik hesaplasın.</p><div class="row" style="justify-content:center"><button class="btn primary" data-act="new-player">${icon(I.plus)} Oyuncu Ekle</button></div></div>`;
   if(!arr.length) return `<div class="empty"><h3>Sonuç yok</h3><p>"${esc(UI.pSearch)}" için oyuncu bulunamadı.</p></div>`;
   return `<div class="pgrid">${arr.map(playerCard).join('')}</div>`;
 }
 function vPlayers(){
   const n=S.players.length, gks=S.players.filter(p=>p.positions.includes('GK')).length;
-  return `<div class="view-head"><div><h1>Oyuncular</h1><p>Kadronuzu yönetin. Mevki puanları birbirinden bağımsızdır.</p></div>
+  return `<div class="view-head"><div><h1>Oyuncular</h1><p>${esc(G.name)} · Genel reytingi yapay zeka hesaplar (99 üzerinden).</p></div>
     <button class="btn primary" data-act="new-player">${icon(I.plus)} Oyuncu Ekle</button></div>
   <div class="stats-strip">
     <div class="stat"><span>Oyuncu</span><b>${n}</b></div>
-    <div class="stat"><span>Ort. Genel</span><b>${fmt(avg(S.players.map(p=>+p.overall)))}</b></div>
+    <div class="stat"><span>Ort. Reyting</span><b>${fmt(avg(S.players.map(overallOf)))}</b></div>
     <div class="stat"><span>Ort. Kondisyon</span><b>${fmt(avg(S.players.map(p=>+p.stamina)))}</b></div>
     <div class="stat"><span>Kaleci</span><b>${gks}</b></div>
   </div>
   <div class="toolbar">
     <div class="search">${icon(I.search,17)}<input type="search" placeholder="Oyuncu ara…" value="${esc(UI.pSearch)}" data-inp="psearch"></div>
     <select data-inp="psort">
-      ${[['name','İsme göre'],['overall','Genel puan'],['stamina','Kondisyon'],['gk','Kalecilik'],['def','Defans'],['mid','Orta saha'],['fwd','Forvet'],['att','Katılım']].map(([v,l])=>`<option value="${v}" ${UI.pSort===v?'selected':''}>${l}</option>`).join('')}
+      ${[['name','İsme göre'],['overall','Genel reyting'],...POS.map(x=>[x.key,x.tr]),...ATTRS.map(([k,l])=>[k,l]),['att','Katılım']].map(([v,l])=>`<option value="${v}" ${UI.pSort===v?'selected':''}>${l}</option>`).join('')}
     </select>
   </div>
   <div id="pgrid-wrap">${playersGridHTML()}</div>`;
 }
+function formVals(){
+  const val=k=>+$(`input[data-inp="pf-range"][data-k="${k}"]`).value;
+  const d={}; POS.forEach(x=>d[x.key]=val(x.key)); ATTRS.forEach(([k])=>d[k]=val(k));
+  d.positions=POS.map(x=>x.c).filter(c=>UI.editing.positions.includes(c));
+  return d;
+}
+function aiPreviewHTML(d){
+  const a=aiRate(d); const top=a.order.slice(0,3);
+  return `<div class="ai-box">
+    <div class="ai-ring" style="--p:${a.overall/99*100};--c:${scoreColor(a.overall)}"><span>${a.overall}</span></div>
+    <div style="flex:1;min-width:0">
+      <div class="ai-t">${icon(I.spark,14)} Yapay zeka genel reytingi</div>
+      <div class="ai-s">En uygun mevki: <b>${POSM[a.best].tr}</b></div>
+      <div class="ai-top">${top.map(c=>`<span class="rb r-${POSM[c].line}">${POSM[c].s} ${a.ratings[c]}</span>`).join('')}</div>
+    </div></div>`;
+}
 function playerForm(p){
   const isNew=!p;
-  p=p||{name:'',overall:6,stamina:6,gk:3,def:5,mid:5,fwd:5,positions:['MID'],speed:null,passing:null,shooting:null,defending:null};
+  p=p||normPlayer({name:'',gk:30,def:55,fullback:55,mid:55,winger:55,fwd:55,stamina:60,passing:60,technique:60,speed:60,shooting:55,positions:['OS']});
   UI.editing={id:isNew?null:p.id,positions:p.positions.slice()};
-  const rng=(k,l,v)=>`<div class="rng"><label>${l}</label><input type="range" min="1" max="10" step="1" value="${v}" data-inp="pf-range" data-k="${k}"><output id="out-${k}">${v}</output></div>`;
+  const rng=(k,l,v)=>`<div class="rng"><label>${l}</label><input type="range" min="1" max="99" step="1" value="${v}" data-inp="pf-range" data-k="${k}"><output id="out-${k}">${v}</output></div>`;
   const body=`
-    <div class="field"><label>Ad Soyad</label><input type="text" id="pf-name" value="${esc(p.name)}" placeholder="Örn. Ahmet Yılmaz" maxlength="40"></div>
-    <div class="sect">Genel</div>
-    ${rng('overall','Genel Yetenek',p.overall)}${rng('stamina','Kondisyon',p.stamina)}
-    <div class="sect">Mevki Puanları</div>
-    ${rng('gk','Kalecilik',p.gk)}${rng('def','Defans',p.def)}${rng('mid','Orta Saha',p.mid)}${rng('fwd','Forvet',p.fwd)}
+    <div class="field"><label>Ad Soyad</label><input type="text" id="pf-name" value="${esc(p.name)}" placeholder="Örn. Ahmet Yılmaz" maxlength="40" autocomplete="off"></div>
+    <div id="ai-prev">${aiPreviewHTML(p)}</div>
+    <div class="sect">Mevki Puanları (1–99)</div>
+    ${POS.map(x=>rng(x.key,x.tr,p[x.key])).join('')}
+    <div class="sect">Fiziksel ve Teknik (1–99)</div>
+    ${ATTRS.map(([k,l])=>rng(k,l,p[k])).join('')}
     <div class="sect">Oynayabildiği Mevkiler</div>
-    <div class="pos-toggle" id="pf-pos">${ROLES.map(r=>`<button type="button" class="${r} ${p.positions.includes(r)?'on':''}" data-act="pf-pos" data-r="${r}">${ROLE_TR[r]}</button>`).join('')}</div>
-    <p class="small muted" style="margin-top:-6px">Seçili olmayan mevkide oynatılırsa puanı %${S.settings.offPenalty} düşürülür.</p>
-    <div class="sect">Ek Özellikler (isteğe bağlı)</div>
-    ${OPT_ATTRS.map(([k,l])=>{const on=p[k]!=null&&p[k]!=='';const v=on?p[k]:6;return `<div class="rng ${on?'':'off'}" id="row-${k}"><label class="use"><input type="checkbox" data-inp="pf-use" data-k="${k}" ${on?'checked':''}> ${l}</label><input type="range" min="1" max="10" value="${v}" data-inp="pf-range" data-k="${k}" ${on?'':'disabled'}><output id="out-${k}">${v}</output></div>`;}).join('')}`;
+    <div class="pos-toggle six" id="pf-pos">${POS.map(x=>`<button type="button" class="${x.line} ${p.positions.includes(x.c)?'on':''}" data-act="pf-pos" data-r="${x.c}">${x.tr}</button>`).join('')}</div>
+    <div class="row" style="justify-content:space-between"><p class="small muted">Seçili olmayan mevkide oynatılırsa puanı %${S.settings.offPenalty} düşer.</p><button type="button" class="btn sm" data-act="pf-suggest">${icon(I.spark,14)} Mevkileri öner</button></div>`;
   openModal(isNew?'Yeni Oyuncu':'Oyuncuyu Düzenle',body,`<button class="btn ghost" data-act="close-modal">Vazgeç</button><button class="btn primary" data-act="save-player">${icon(I.check)} Kaydet</button>`);
   setTimeout(()=>{const i=$('#pf-name');if(i&&isNew)i.focus();},50);
 }
+function refreshAIPreview(){ const box=$('#ai-prev'); if(box&&UI.editing) box.innerHTML=aiPreviewHTML(formVals()); }
 function savePlayerForm(){
   const name=$('#pf-name').value.trim();
   if(!name){toast('Ad soyad giriniz','err');$('#pf-name').focus();return;}
   if(!UI.editing.positions.length){toast('En az bir mevki seçin','err');return;}
-  const val=k=>+$(`input[data-inp="pf-range"][data-k="${k}"]`).value;
-  const data={name,overall:val('overall'),stamina:val('stamina'),gk:val('gk'),def:val('def'),mid:val('mid'),fwd:val('fwd'),positions:ROLES.filter(r=>UI.editing.positions.includes(r))};
-  OPT_ATTRS.forEach(([k])=>{data[k]=$(`input[data-inp="pf-use"][data-k="${k}"]`).checked?val(k):null;});
+  const data=Object.assign({name},formVals());
   let p;
-  if(UI.editing.id){p=getP(UI.editing.id);Object.assign(p,data);toast(`${name} güncellendi`,'ok');}
+  if(UI.editing.id){p=getP(UI.editing.id);Object.assign(p,data);AIC.delete(p);toast(`${name} güncellendi · Reyting ${overallOf(p)}`,'ok');}
   else{
     if(S.players.some(x=>x.name.toLocaleLowerCase('tr')===name.toLocaleLowerCase('tr'))){toast('Bu isimde bir oyuncu zaten var','err');return;}
-    p=Object.assign({id:uid(),active:true,createdAt:new Date().toISOString()},data);S.players.push(p);toast(`${name} eklendi`,'ok');
+    p=normPlayer(Object.assign({id:uid(),active:true,createdAt:new Date().toISOString()},data));S.players.push(p);toast(`${name} eklendi · Reyting ${overallOf(p)}`,'ok');
   }
   if(S.current) computeMetrics(S.current);
   persist(); cloud(()=>Cloud.upsert('players',[pToRow(p)])); closeModal(); render();
@@ -891,8 +1087,8 @@ function matchListHTML(){
   if(!arr.length) return `<div class="empty"><h3>Oyuncu bulunamadı</h3><p>${S.players.length?'Aramayı değiştirin.':'Önce Oyuncular ekranından oyuncu ekleyin.'}</p></div>`;
   return `<div class="plist">${arr.map(p=>{const on=S.draft.selected.includes(p.id);return `<div class="prow ${on?'sel':''}" data-act="toggle-sel" data-id="${p.id}">
     <div class="cbx">${on?icon(I.check,14):''}</div>
-    <div class="nm"><b>${esc(p.name)}</b><div>${ROLES.filter(r=>p.positions.includes(r)).map(r=>`<span class="rb r-${r}">${ROLE_SHORT[r]}</span>`).join('')}</div></div>
-    <div class="sc">${p.overall}</div></div>`;}).join('')}</div>`;
+    <div class="nm"><b>${esc(p.name)}</b><div>${posChips(p)}</div></div>
+    <div class="sc">${overallOf(p)}</div></div>`;}).join('')}</div>`;
 }
 function matchSideHTML(){
   const n=S.draft.selected.length, st=matchStatus(), ok=n===MATCH_SIZE;
@@ -903,7 +1099,7 @@ function matchSideHTML(){
       <div class="counter">
         <div class="ring" style="--p:${Math.min(100,n/MATCH_SIZE*100)};--c:${c}"><span>${n}<small>/ ${MATCH_SIZE}</small></span></div>
         <div><div style="font-family:var(--cond);font-size:22px;font-weight:800;text-transform:uppercase">Katılımcı</div>
-          <div class="small muted" style="margin-top:4px">${sel.length?`Ort. genel: <b style="color:var(--text)">${fmt(avg(sel.map(p=>+p.overall)))}</b><br>Kaleci: <b style="color:var(--text)">${sel.filter(p=>p.positions.includes('GK')).length}</b>`:'Henüz seçim yok'}</div></div>
+          <div class="small muted" style="margin-top:4px">${sel.length?`Ort. reyting: <b style="color:var(--text)">${fmt(avg(sel.map(overallOf)))}</b><br>Kaleci: <b style="color:var(--text)">${sel.filter(p=>p.positions.includes('GK')).length}</b>`:'Henüz seçim yok'}</div></div>
       </div>
       <div class="status ${st.cls}" style="margin-top:14px">${st.t}</div>
       <div style="display:grid;gap:8px;margin-top:14px">
@@ -915,7 +1111,7 @@ function matchSideHTML(){
 }
 function vMatch(){
   const last=[...S.matches].sort((a,b)=>b.date.localeCompare(a.date))[0];
-  return `<div class="view-head"><div><h1>Haftalık Maç</h1><p>${esc(fmtDate(S.draft.date))} · Maça gelecek oyuncuları seçin.</p></div></div>
+  return `<div class="view-head"><div><h1>Haftalık Maç</h1><p>${esc(G.name)} · ${esc(fmtDate(S.draft.date))}</p></div></div>
   <div class="match-layout">
     <aside class="match-side" id="mside">${matchSideHTML()}</aside>
     <section>
@@ -932,10 +1128,10 @@ function vMatch(){
 }
 function refreshMatch(){ $('#mside').innerHTML=matchSideHTML(); $('#mlist').innerHTML=matchListHTML(); }
 function saveAttendance(){
-  S.attendance[S.draft.date]=S.draft.selected.slice(); persist();
-  cloud(()=>Cloud.upsert('attendance',[{match_date:S.draft.date,player_ids:S.draft.selected}],'match_date'));
+  saveAttendanceSilent();
   toast(`${fmtDate(S.draft.date,{day:'numeric',month:'long'})} katılımı kaydedildi (${S.draft.selected.length} oyuncu)`,'ok');
 }
+function saveAttendanceSilent(){S.attendance[S.draft.date]=S.draft.selected.slice();persist();const d=S.draft.date,ids=S.draft.selected.slice();cloud(()=>Cloud.upsert('attendance',[attRow(d,ids)],'group_id,match_date'));}
 
 /* ================== Takım oluşturma (animasyonlu) ================== */
 async function generate(reroll=false){
@@ -978,10 +1174,9 @@ async function generate(reroll=false){
   const res=pickResult(ctx,prevKey);
   if(!res){$('#modal-root').innerHTML='';toast('Uygun kombinasyon bulunamadı (sabit oyuncuları kontrol edin)','err');return;}
   const pins=new Set([...pinA,...pinB]);
-  // Sabitlenen oyuncular A'da kalsın diye takım sırası korunur
   S.current={id:uid(),matchId:reroll&&cur?cur.matchId:null,date,playerIds:ids,
     teamA:buildTeam(res.A,ps,pins),teamB:buildTeam(res.B,ps,pins),locked:false,saved:false,
-    scoreA:reroll&&cur?cur.scoreA??null:null,scoreB:reroll&&cur?cur.scoreB??null:null,createdAt:new Date().toISOString(),alternatives:ctx.results.length};
+    scoreA:reroll&&cur?cur.scoreA??null:null,scoreB:reroll&&cur?cur.scoreB??null:null,createdAt:new Date().toISOString()};
   computeMetrics(S.current);
   $('#modal-root').innerHTML='';
   UI.animate=true; UI.swapFrom=null; persist();
@@ -1002,12 +1197,17 @@ function pitchSVG(){
     <path d="M3 5a2 2 0 0 0 2-2M63 3a2 2 0 0 0 2 2M3 100a2 2 0 0 1 2 2M65 100a2 2 0 0 0-2 2"/>
   </svg>`;
 }
+function orderLine(arr){ // bek/kanat oyuncularını kenarlara, stoper/orta sahayı merkeze yerleştir
+  const wide=arr.filter(e=>WIDE.has(subOf(teamPlayer(e),e.role))), mid=arr.filter(e=>!wide.includes(e));
+  if(!wide.length) return arr;
+  const out=[...mid]; wide.forEach((e,i)=>{ if(i%2===0) out.unshift(e); else out.push(e); });
+  return out;
+}
 function tokenPositions(team,side,mode){
   const groups={GK:[],DEF:[],MID:[],FWD:[]}; team.players.forEach(e=>groups[e.role].push(e));
   const Y=mode==='single'?{GK:90,DEF:71,MID:49,FWD:25}:side==='bottom'?{GK:92.5,DEF:80,MID:67.5,FWD:57.5}:{GK:7.5,DEF:20,MID:32.5,FWD:42.5};
   const out=[];
-  ROLES.forEach(r=>{const arr=groups[r]; const n=arr.length; const sp=Math.min(mode==='single'?28:25,78/Math.max(n,1));
-    // ortalama puana göre güçlü oyuncuyu ortaya yerleştir
+  ROLES.forEach(r=>{const arr=orderLine(groups[r]); const n=arr.length; const sp=Math.min(mode==='single'?28:25,78/Math.max(n,1));
     arr.forEach((e,i)=>out.push({e,x:50+(i-(n-1)/2)*sp,y:Y[r]}));});
   return out;
 }
@@ -1016,9 +1216,9 @@ function pitchHTML(cur,mode,interactive=true){
   const add=(team,key,side)=>tokenPositions(team,side,mode==='both'?'both':'single').forEach(t=>toks.push({...t,key}));
   if(mode==='both'){add(cur.teamA,'A','bottom');add(cur.teamB,'B','top');}
   else add(mode==='A'?cur.teamA:cur.teamB,mode,'bottom');
-  return `<div class="pitch">${pitchSVG()}${toks.map((t,i)=>{const p=teamPlayer(t.e);const v=roleScore(p,t.e.role);
-    return `<div class="tok ${t.key} ${t.e.role==='GK'?'gk':''} ${UI.swapFrom===t.e.id?'swapsrc':''} ${UI.animate&&interactive?'pre':''}" style="left:${UI.animate&&interactive?50:t.x}%;top:${UI.animate&&interactive?50:t.y}%;transition-delay:${UI.animate?i*45:0}ms" data-x="${t.x}" data-y="${t.y}" ${interactive?`data-act="tp" data-id="${t.e.id}"`:''} title="${esc(p.name)} · ${ROLE_TR[t.e.role]} ${fmt(v)}">
-      <div class="disc">${fmt(v)}<span class="rl">${ROLE_SHORT[t.e.role]}</span>${t.e.pinned?'<span class="pinm">📌</span>':''}</div><div class="lbl">${esc(shortName(p.name))}</div></div>`;}).join('')}</div>`;
+  return `<div class="pitch">${pitchSVG()}${toks.map((t,i)=>{const p=teamPlayer(t.e);const v=roleScore(p,t.e.role);const sub=POSM[subOf(p,t.e.role)].s;
+    return `<div class="tok ${t.key} ${t.e.role==='GK'?'gk':''} ${UI.swapFrom===t.e.id?'swapsrc':''} ${UI.animate&&interactive?'pre':''}" style="left:${UI.animate&&interactive?50:t.x}%;top:${UI.animate&&interactive?50:t.y}%;transition-delay:${UI.animate?i*45:0}ms" data-x="${t.x}" data-y="${t.y}" ${interactive?`data-act="tp" data-id="${t.e.id}"`:''} title="${esc(p.name)} · ${POSM[subOf(p,t.e.role)].tr} ${fmt(v)}">
+      <div class="disc">${fmt(v)}<span class="rl">${sub}</span>${t.e.pinned?'<span class="pinm">📌</span>':''}</div><div class="lbl">${esc(shortName(p.name))}</div></div>`;}).join('')}</div>`;
 }
 function teamCardHTML(cur,key){
   const team=key==='A'?cur.teamA:cur.teamB, m=cur.metrics[key];
@@ -1036,16 +1236,16 @@ function teamCardHTML(cur,key){
       </div>
       <div class="lines-dist">${['DEF','MID','FWD'].map(l=>`<span>${ROLE_SHORT[l]} <b>${m.lines[l].count}</b> · ${fmt(m.lines[l].avg)}</span>`).join('')}</div>
     </div>
-    <div class="tlist">${list.map(e=>{const p=teamPlayer(e);const v=roleScore(p,e.role);const off=!(p.positions||[]).includes(e.role);
+    <div class="tlist">${list.map(e=>{const p=teamPlayer(e);const v=roleScore(p,e.role);const off=!inLine(p,e.role);const sub=POSM[subOf(p,e.role)];
       return `<div class="tp ${UI.swapFrom===e.id?'swapsrc':''}" data-act="tp" data-id="${e.id}">
-        <span class="rb r-${e.role}">${ROLE_SHORT[e.role]}</span>
+        <span class="rb r-${e.role}">${sub.s}</span>
         <div class="nm">${esc(p.name)}${off?'<small title="Alternatif mevki">alt. mevki</small>':''}</div>
         ${e.pinned?`<span class="pin" title="Sabit">${icon(I.pin,14)}</span>`:''}
         <div class="rt" style="color:${scoreColor(v)}">${fmt(v)}</div></div>`;}).join('')}</div>
   </div>`;
 }
-function cmpRow(lbl,a,b,max=10){
-  const tot=Math.max(a+b,0.0001); const wa=clamp(a/max*100,2,100), wb=clamp(b/max*100,2,100);
+function cmpRow(lbl,a,b,max=99){
+  const wa=clamp(a/max*100,2,100), wb=clamp(b/max*100,2,100);
   return `<div class="cmp"><div class="va">${fmt(a)}</div><div class="ta"><i style="width:${wa}%"></i></div><div class="lb">${lbl}</div><div class="tb"><i style="width:${wb}%"></i></div><div class="vb">${fmt(b)}</div></div>`;
 }
 function balanceLabel(b){return b>=92?'Mükemmel':b>=84?'Çok iyi':b>=72?'İyi':b>=60?'Orta':'Dengesiz';}
@@ -1057,7 +1257,7 @@ function compareHTML(m){
     <div>
       <div class="row" style="justify-content:space-between;margin-bottom:10px">
         <div style="font-family:var(--cond);font-size:22px;font-weight:800;text-transform:uppercase">${balanceLabel(b)} denge</div>
-        <span class="chip">Güç farkı <b style="color:var(--text)">${fmt(m.powerDiff)}</b> puan</span>
+        <span class="chip">Güç farkı <b style="color:var(--text)">${fmt1(m.powerDiff)}</b> puan</span>
       </div>
       <div class="cmp-rows">
         ${cmpRow('Ort. Güç',m.A.power,m.B.power)}
@@ -1068,10 +1268,10 @@ function compareHTML(m){
         ${cmpRow('Forvet',m.A.lines.FWD.avg,m.B.lines.FWD.avg)}
       </div>
       <div class="diff-chips">
-        <span class="chip">Güç %${Math.round(w.power*100)} · fark ${fmt(m.comps.power)}</span>
-        <span class="chip">Mevki %${Math.round(w.pos*100)} · fark ${fmt(m.comps.pos)}</span>
-        <span class="chip">Kondisyon %${Math.round(w.stamina*100)} · fark ${fmt(m.comps.stamina)}</span>
-        <span class="chip">Kaleci %${Math.round(w.gk*100)} · fark ${fmt(m.comps.gk*4)}</span>
+        <span class="chip">Güç %${Math.round(w.power*100)}</span>
+        <span class="chip">Mevki %${Math.round(w.pos*100)}</span>
+        <span class="chip">Kondisyon %${Math.round(w.stamina*100)}</span>
+        <span class="chip">Kaleci %${Math.round(w.gk*100)}</span>
       </div>
     </div></div>`;
 }
@@ -1093,7 +1293,7 @@ function vTeams(){
       </div>
     </div>
     ${L?`<div class="lock-banner"><span>${icon(I.lock,16)} Takımlar kilitli — değişiklik ve yeniden oluşturma kapalı.</span><button class="btn sm" data-act="lock">Kilidi Aç</button></div>`:''}
-    ${UI.swapFrom?`<div class="swap-banner"><span>${icon(I.swap,16)} <b>${esc(teamPlayer({id:UI.swapFrom,snap:null}).name)}</b> için takas edilecek oyuncuyu seçin</span><button class="btn sm" data-act="swap-cancel">İptal</button></div>`:''}
+    ${UI.swapFrom?`<div class="swap-banner"><span>${icon(I.swap,16)} <b>${esc(teamPlayer({id:UI.swapFrom}).name)}</b> için takas edilecek oyuncuyu seçin</span><button class="btn sm" data-act="swap-cancel">İptal</button></div>`:''}
     ${unequal?`<div class="warn-banner">Takımlar eşit değil (${cur.teamA.players.length} - ${cur.teamB.players.length}). Dengeli bir maç için oyuncu taşıyın ya da takas yapın.</div>`:''}
     ${gkIssue?`<div class="warn-banner">Her takımda tam olarak 1 kaleci olmalı. Oyuncuya dokunarak mevkisini değiştirin.</div>`:''}
     ${compareHTML(m)}
@@ -1122,10 +1322,10 @@ function playerSheet(id){
   if(S.current.locked){toast('Takımlar kilitli. Düzenlemek için kilidi açın.','err');return;}
   const body=`<div class="row" style="gap:12px">
       <div class="avatar" style="border-color:${f.k==='A'?'var(--blue)':'var(--red)'}">${esc(initials(p.name))}</div>
-      <div style="flex:1"><div style="font-weight:700;font-size:16px">${esc(p.name)}</div><div class="small muted">${f.k} Takımı · ${ROLE_TR[f.e.role]} · ${fmt(roleScore(p,f.e.role))} puan</div></div>
+      <div style="flex:1"><div style="font-weight:700;font-size:16px">${esc(p.name)}</div><div class="small muted">${f.k} Takımı · ${POSM[subOf(p,f.e.role)].tr} · ${fmt(roleScore(p,f.e.role))} puan · Reyting ${overallOf(p)}</div></div>
     </div>
     <div class="sect">Mevki Değiştir</div>
-    <div class="role-pick">${ROLES.map(r=>`<button class="${f.e.role===r?'on':''}" data-act="set-role" data-id="${id}" data-r="${r}"><small>${fmt(roleScore(p,r))}</small>${ROLE_TR[r]}</button>`).join('')}</div>
+    <div class="role-pick">${ROLES.map(r=>`<button class="${f.e.role===r?'on':''}" data-act="set-role" data-id="${id}" data-r="${r}"><small>${fmt(roleScore(p,r))}</small>${POSM[subOf(p,r)].tr}</button>`).join('')}</div>
     <div class="sect">İşlemler</div>
     <div class="sheet-actions">
       <button class="btn" data-act="swap-start" data-id="${id}">${icon(I.swap)} Diğer takımdan biriyle takas et</button>
@@ -1139,7 +1339,7 @@ function setRole(id,role){
   const f=findInCurrent(id); if(!f||f.e.role===role) return;
   const old=f.e.role;
   if(role==='GK'){const gk=f.t.players.find(e=>e.role==='GK'&&e.id!==id); if(gk) gk.role=old;}
-  else if(old==='GK'){ // kaleciden çıkarılıyorsa en iyi kaleci adayı kaleye geçer
+  else if(old==='GK'){
     const cands=f.t.players.filter(e=>e.id!==id).sort((a,b)=>roleScore(teamPlayer(b),'GK')-roleScore(teamPlayer(a),'GK'));
     if(cands[0]){cands[0].role='GK';}
   }
@@ -1156,13 +1356,12 @@ function swapWith(id){
   if(a.k===b.k){ const r=a.e.role; a.e.role=b.e.role; b.e.role=r; afterChange('Mevkiler değiştirildi'); return; }
   const ra=a.e.role, rb=b.e.role;
   a.t.players[a.i]=b.e; b.t.players[b.i]=a.e; a.e.pinned=false; b.e.pinned=false;
-  // Takas edilen oyuncu karşı tarafın mevkisini devralır
   a.e.role=rb; b.e.role=ra;
   afterChange(`${shortName(teamPlayer(a.e).name)} ⇄ ${shortName(teamPlayer(b.e).name)} takas edildi`);
 }
 function teamsText(c){
-  const ln=(t)=>{const o={GK:0,DEF:1,MID:2,FWD:3};return t.players.slice().sort((a,b)=>o[a.role]-o[b.role]).map(e=>`${ROLE_SHORT[e.role]} · ${teamPlayer(e).name}`).join('\n');};
-  return `⚽ HALI SAHA · ${fmtDate(c.date,{day:'numeric',month:'long',year:'numeric',weekday:'long'})}\n\n🔵 A TAKIMI (${c.metrics.A.formation}) · Güç ${fmt(c.metrics.A.total)}\n${ln(c.teamA)}\n\n🔴 B TAKIMI (${c.metrics.B.formation}) · Güç ${fmt(c.metrics.B.total)}\n${ln(c.teamB)}\n\n⚖️ Denge: %${Math.round(c.metrics.balance)}`;
+  const ln=(t)=>{const o={GK:0,DEF:1,MID:2,FWD:3};return t.players.slice().sort((a,b)=>o[a.role]-o[b.role]).map(e=>{const p=teamPlayer(e);return `${POSM[subOf(p,e.role)].s} · ${p.name}`;}).join('\n');};
+  return `⚽ ${G.name.toLocaleUpperCase('tr')} · ${fmtDate(c.date,{day:'numeric',month:'long',year:'numeric',weekday:'long'})}\n\n🔵 A TAKIMI (${c.metrics.A.formation}) · Güç ${fmt(c.metrics.A.total)}\n${ln(c.teamA)}\n\n🔴 B TAKIMI (${c.metrics.B.formation}) · Güç ${fmt(c.metrics.B.total)}\n${ln(c.teamB)}\n\n⚖️ Denge: %${Math.round(c.metrics.balance)}`;
 }
 function saveTeams(){
   const c=S.current; if(!c) return;
@@ -1171,14 +1370,15 @@ function saveTeams(){
   [...m.teamA.players,...m.teamB.players].forEach(e=>{const p=getP(e.id);if(p)e.snap=snap(p);});
   const i=S.matches.findIndex(x=>x.id===id); if(i>=0) S.matches[i]=m; else S.matches.push(m);
   c.matchId=id; c.saved=true; S.attendance[c.date]=c.playerIds.slice();
-  persist(); cloud(async()=>{await Cloud.upsert('matches',[mToRow(m)]);await Cloud.upsert('attendance',[{match_date:c.date,player_ids:c.playerIds}],'match_date');});
+  persist(); const d=c.date, ids=c.playerIds.slice();
+  cloud(async()=>{await Cloud.upsert('matches',[mToRow(m)]);await Cloud.upsert('attendance',[attRow(d,ids)],'group_id,match_date');});
   render(); toast(i>=0?'Maç güncellendi':'Takımlar kaydedildi · Geçmiş maçlara eklendi','ok');
 }
 
 /* ================== Görünüm: Geçmiş ================== */
 function vHistory(){
-  const arr=[...S.matches].sort((a,b)=>b.date.localeCompare(a.date)||String(b.createdAt).localeCompare(String(a.createdAt)));
-  const head=`<div class="view-head"><div><h1>Geçmiş Maçlar</h1><p>Kaydedilen ${arr.length} maç</p></div></div>`;
+  const arr=[...S.matches].filter(m=>m.metrics&&m.metrics.A).sort((a,b)=>b.date.localeCompare(a.date)||String(b.createdAt).localeCompare(String(a.createdAt)));
+  const head=`<div class="view-head"><div><h1>Geçmiş Maçlar</h1><p>${esc(G.name)} · Kaydedilen ${arr.length} maç</p></div></div>`;
   if(!arr.length) return head+`<div class="empty"><div class="ico">📋</div><h3>Kayıtlı maç yok</h3><p>Takımları oluşturup "Kaydet" dediğinizde burada görünür.</p><button class="btn primary" data-act="goto" data-v="mac">Maç Oluştur</button></div>`;
   return head+`<div class="hist">${arr.map((m,i)=>{
     const d=new Date(m.date+'T12:00:00'); const open=UI.openHist===m.id; const mm=m.metrics;
@@ -1196,11 +1396,12 @@ function vHistory(){
 }
 function histBody(m){
   const o={GK:0,DEF:1,MID:2,FWD:3};
+  const P=e=>{ if(!e._h){ Object.defineProperty(e,'_h',{value:normPlayer(Object.assign({id:e.id},e.snap||{})),enumerable:false}); } return e._h; };
   const tl=(t,k)=>`<div class="hteam"><h4><span class="dot" style="width:10px;height:10px;border-radius:50%;background:${k==='A'?'var(--blue)':'var(--red)'}"></span>${k} Takımı <span class="chip">${m.metrics[k].formation}</span></h4>
     <div class="small muted" style="margin-bottom:8px">Güç ${fmt(m.metrics[k].total)} · Kondisyon ${fmt(m.metrics[k].stamina)} · Kaleci ${fmt(m.metrics[k].gk)}</div>
-    <ul>${t.players.slice().sort((a,b)=>o[a.role]-o[b.role]).map(e=>{const p=e.snap?Object.assign({id:e.id},e.snap):teamPlayer(e);return `<li><span class="rb r-${e.role}">${ROLE_SHORT[e.role]}</span>${esc(p.name)}<span class="rt">${fmt(roleScore(p,e.role))}</span></li>`;}).join('')}</ul></div>`;
+    <ul>${t.players.slice().sort((a,b)=>o[a.role]-o[b.role]).map(e=>{const p=e.snap?P(e):teamPlayer(e);return `<li><span class="rb r-${e.role}">${POSM[subOf(p,e.role)].s}</span>${esc(p.name)}<span class="rt">${fmt(roleScore(p,e.role))}</span></li>`;}).join('')}</ul></div>`;
   const prev=UI.animate; UI.animate=false;
-  const pv=pitchHTMLHist(m); UI.animate=prev;
+  const pv=pitchHTML({teamA:{players:m.teamA.players.map(e=>({...e}))},teamB:{players:m.teamB.players.map(e=>({...e}))}},'both',false); UI.animate=prev;
   return `<div class="hbody">${tl(m.teamA,'A')}<div>${pv}</div>${tl(m.teamB,'B')}
     <div class="hactions">
       <button class="btn sm" data-act="hist-score" data-id="${m.id}">${icon(I.score,16)} Skor Gir</button>
@@ -1210,13 +1411,6 @@ function histBody(m){
       <button class="btn sm danger" data-act="hist-del" data-id="${m.id}">${icon(I.trash,16)} Sil</button>
     </div></div>`;
 }
-function pitchHTMLHist(m){
-  const wrap={teamA:{players:m.teamA.players.map(e=>({...e}))},teamB:{players:m.teamB.players.map(e=>({...e}))}};
-  // snapshot isimlerini kullan
-  const html=pitchHTML(wrap,'both',false);
-  return html;
-}
-function afterHistory(){}
 function histScore(id){
   const m=S.matches.find(x=>x.id===id); if(!m) return;
   UI.editing={matchId:id};
@@ -1231,15 +1425,12 @@ function histScore(id){
 function vSettings(){
   const st=S.settings, w=st.weights, wn=weightsNorm(); const tot=w.power+w.pos+w.stamina+w.gk;
   const wr=(k,l,c)=>`<div class="slider-row"><label>${l}</label><input type="range" min="0" max="100" value="${w[k]}" data-inp="weight" data-k="${k}" style="accent-color:${c}"><b id="w-${k}">%${Math.round(wn[k]*100)}</b></div>`;
-  const c=Cloud.cfg();
-  return `<div class="view-head"><div><h1>Ayarlar</h1><p>Algoritma ağırlıkları, dizilişler ve veri yönetimi</p></div></div>
+  return `<div class="view-head"><div><h1>Ayarlar</h1><p>${esc(G.name)} grubunun algoritma ayarları</p></div></div>
   <div class="set-grid">
     <div class="card">
       <h3>Denge Ağırlıkları</h3>
       <p class="small muted" style="margin-bottom:16px">Takım dengesi hesaplanırken her kriterin etkisi. Oranlar otomatik olarak %100'e normalize edilir.</p>
-      <div id="wbox">
       ${wr('power','Genel takım gücü','#3ddc84')}${wr('pos','Mevki dengesi','#3b82f6')}${wr('stamina','Kondisyon','#f5b301')}${wr('gk','Kaleci dengesi','#ef4444')}
-      </div>
       <div class="wbar" id="wbar">${wBar()}</div>
       <div class="weight-total"><span>Ham toplam: <b id="wtot">${tot}</b></span><button class="btn sm" data-act="w-reset">Varsayılan (35/30/20/15)</button></div>
     </div>
@@ -1255,20 +1446,10 @@ function vSettings(){
       <p class="small muted">Oyuncu profilinde seçili olmayan bir mevkide oynatıldığında mevki puanına uygulanır.</p>
     </div>
     <div class="card">
-      <h3>${icon(I.cloud,20)} Bulut (Supabase)</h3>
-      ${APP_CONFIG.SUPABASE_URL&&APP_CONFIG.SUPABASE_ANON_KEY?`<p class="small muted" style="margin-bottom:14px">Bu site ortak Supabase veritabanına otomatik bağlıdır. Herkes aynı oyuncuları ve maçları görür; ek ayar gerekmez.</p>`:`
-      <p class="small muted" style="margin-bottom:14px">Verileri tüm cihazlarda ortak kullanmak için Supabase bağlayın. Tablolar için <code>schema.sql</code> dosyasını SQL Editor'da çalıştırın.</p>
-      <form onsubmit="return false" autocomplete="off">
-      <div class="field" style="margin-bottom:10px"><label>Project URL</label><input type="url" id="sb-url" name="sbproj" autocomplete="off" inputmode="url" value="${esc(S.sb.url||'')}" placeholder="https://xxxx.supabase.co"></div>
-      <div class="field" style="margin-bottom:14px"><label>Anon public key</label><input type="text" id="sb-key" name="sbanon" autocomplete="off" spellcheck="false" value="${esc(S.sb.key||'')}" placeholder="eyJhbGciOi…"></div>
-      </form>`}
-      <div class="row">
-        ${APP_CONFIG.SUPABASE_URL?'':`<button class="btn primary sm" data-act="sb-save">${icon(I.check,16)} Kaydet & Bağlan</button>`}
-        <button class="btn sm" data-act="sb-pull" ${Cloud.on?'':'disabled'}>${icon(I.download,16)} Buluttan Çek</button>
-        <button class="btn sm" data-act="sb-push" ${Cloud.on?'':'disabled'}>${icon(I.upload,16)} Buluta Yükle</button>
-        ${(S.sb.url||S.sb.key)&&!APP_CONFIG.SUPABASE_URL?`<button class="btn sm ghost" data-act="sb-clear">Bağlantıyı Kaldır</button>`:''}
-      </div>
-      <div class="status ${Cloud.on?'ok':'warn'}" style="margin-top:14px">${Cloud.on?`Bağlı: ${esc(c.url)}`:'Bağlı değil — veriler bu tarayıcıda saklanıyor.'}</div>
+      <h3>${icon(I.users,20)} Grup</h3>
+      <p class="small muted" style="margin-bottom:12px">Bu gruptaki herkes aynı oyuncu listesini ve maç geçmişini görür. Başka gruplar bu verilere erişemez.</p>
+      <div class="row"><span class="chip">Grup <b style="color:var(--text)">${esc(G.name)}</b></span><span class="chip">Kod <b style="color:var(--text);letter-spacing:1.5px">${G.code}</b></span></div>
+      <div class="row" style="margin-top:12px"><button class="btn sm primary" data-act="grp-invite">${icon(I.link,16)} Davet Linkini Kopyala</button><button class="btn sm" data-act="grp-open">Grupları Yönet</button><button class="btn sm" data-act="sync-now">${icon(I.refresh,16)} Şimdi Senkronize Et</button></div>
     </div>
     <div class="card">
       <h3>Veri Yönetimi</h3>
@@ -1276,25 +1457,23 @@ function vSettings(){
       <div class="row">
         <button class="btn sm" data-act="export">${icon(I.download,16)} Dışa Aktar (JSON)</button>
         <button class="btn sm" data-act="import">${icon(I.upload,16)} İçe Aktar</button>
-        <button class="btn sm" data-act="load-demo">Demo Veriyi Yükle</button>
-        <button class="btn sm danger" data-act="wipe">${icon(I.trash,16)} Tüm Verileri Sil</button>
       </div>
     </div>
   </div>`;
 }
 function wBar(){const w=weightsNorm();return `<i style="width:${w.power*100}%;background:#3ddc84"></i><i style="width:${w.pos*100}%;background:#3b82f6"></i><i style="width:${w.stamina*100}%;background:#f5b301"></i><i style="width:${w.gk*100}%;background:#ef4444"></i>`;}
 function settingsChanged(){
+  resetAI();
   if(S.current) computeMetrics(S.current);
-  S.matches.forEach(m=>{});
-  persist(); cloud(()=>Cloud.upsert('app_settings',[{id:'default',data:S.settings}]));
+  persist(); cloud(()=>Cloud.upsert('app_settings',[setRow()]));
 }
 function exportData(){
-  const data=JSON.stringify({app:'halisaha-pro',version:1,exportedAt:new Date().toISOString(),players:S.players,matches:S.matches,attendance:S.attendance,settings:S.settings},null,2);
+  const data=JSON.stringify({app:'halisaha-pro',version:2,group:G.name,exportedAt:new Date().toISOString(),players:S.players,matches:S.matches,attendance:S.attendance,settings:S.settings},null,2);
   openModal('Dışa Aktar',`<p class="small muted">Yedeği indirin veya metni kopyalayıp saklayın.</p><textarea id="exp-txt" rows="12" readonly style="font-family:monospace;font-size:12px">${esc(data)}</textarea>`,
     `<button class="btn" data-act="exp-copy">${icon(I.copy,16)} Kopyala</button><button class="btn primary" data-act="exp-dl">${icon(I.download,16)} İndir</button>`);
 }
 function importData(){
-  openModal('İçe Aktar',`<p class="small muted">Daha önce dışa aktardığınız JSON dosyasını seçin ya da metni yapıştırın. Mevcut veriler değiştirilir.</p>
+  openModal('İçe Aktar',`<p class="small muted">Daha önce dışa aktardığınız JSON dosyasını seçin ya da metni yapıştırın. Oyuncular bu gruba eklenir/güncellenir.</p>
     <input type="file" accept=".json,application/json" data-inp="imp-file">
     <textarea id="imp-txt" rows="9" placeholder='{"players":[...]}' style="font-family:monospace;font-size:12px"></textarea>`,
     `<button class="btn ghost" data-act="close-modal">Vazgeç</button><button class="btn primary" data-act="imp-do">${icon(I.upload,16)} İçe Aktar</button>`);
@@ -1302,11 +1481,11 @@ function importData(){
 function applyImport(txt){
   try{
     const d=JSON.parse(txt); if(!Array.isArray(d.players)) throw new Error('players bulunamadı');
-    S.players=d.players.map(p=>Object.assign({positions:[],active:true},p)); S.matches=d.matches||[]; S.attendance=d.attendance||{};
-    if(d.settings) S.settings=Object.assign(clone(DEFAULT_SETTINGS),d.settings);
-    S.current=null; S.draft.selected=S.draft.selected.filter(id=>getP(id));
-    persist(); closeModal(); render(); toast(`${S.players.length} oyuncu, ${S.matches.length} maç içe aktarıldı`,'ok');
-    if(Cloud.on) toast('Buluta göndermek için "Buluta Yükle"yi kullanın');
+    d.players.map(normPlayer).forEach(p=>{const i=S.players.findIndex(x=>x.id===p.id); if(i>=0) S.players[i]=p; else S.players.push(p);});
+    (d.matches||[]).forEach(m=>{if(!S.matches.some(x=>x.id===m.id)) S.matches.push(m);});
+    Object.assign(S.attendance,d.attendance||{});
+    resetAI(); persist(); closeModal(); render(); cloudPushAll(true);
+    toast(`${d.players.length} oyuncu içe aktarıldı`,'ok');
   }catch(e){toast('Geçersiz dosya: '+e.message,'err');}
 }
 
@@ -1315,11 +1494,17 @@ const ACT = {
   'close-modal':()=>closeModal(),
   'sync-info':()=>{
     const st=UI.syncState, q=Q.ops.length;
-    const msg=!Cloud.on?'Bulut bağlantısı yok; veriler bu cihazda saklanıyor.':st==='ok'?'Tüm değişiklikler Supabase\'e kaydedildi. Diğer kullanıcıların değişiklikleri otomatik alınır.':st==='wait'?`İnternet bağlantısı bekleniyor. ${q} değişiklik sırada ve bağlantı gelince otomatik gönderilecek; hiçbir şey kaybolmaz.`:st==='busy'?'Senkronize ediliyor…':'Son işlem sunucu tarafından reddedildi.';
+    const msg=st==='ok'?'Tüm değişiklikler kaydedildi. Grup üyelerinin değişiklikleri otomatik alınır.':st==='wait'?`İnternet bağlantısı bekleniyor. ${q} değişiklik sırada ve bağlantı gelince otomatik gönderilecek; hiçbir şey kaybolmaz.`:st==='busy'?'Senkronize ediliyor…':'Son işlem sunucu tarafından reddedildi.';
     openModal('Senkronizasyon',`<p style="line-height:1.55">${msg}</p>${UI.lastErr?`<p class="small muted" style="word-break:break-word">Son hata: ${esc(UI.lastErr)}</p>`:''}`,
-      `<button class="btn ghost" data-act="close-modal">Kapat</button>${Cloud.on?'<button class="btn primary" data-act="sync-now">Şimdi Senkronize Et</button>':''}`,'sm');
+      `<button class="btn ghost" data-act="close-modal">Kapat</button><button class="btn primary" data-act="sync-now">Şimdi Senkronize Et</button>`,'sm');
   },
   'sync-now':async()=>{closeModal();Q.delay=3000;if(Q.ops.length){await flushQueue();}else{await cloudPull(true);}if(UI.syncState==='ok')toast('Senkronizasyon tamam','ok');},
+  'grp-open':()=>groupModal(),
+  'grp-switch':el=>{closeModal();switchGroup(el.dataset.code).then(()=>toast(`"${G.name}" grubuna geçildi`,'ok'));},
+  'grp-invite':()=>copyText(`${G.name} halı saha grubuna katıl: ${inviteLink(G.code)}\nDavet kodu: ${G.code}`),
+  'grp-leave':()=>confirmBox('Gruptan Çık',`<b style="color:var(--text)">${esc(G.name)}</b> grubu bu cihazdan kaldırılacak. Grup verileri silinmez; davet koduyla tekrar katılabilirsiniz.`,'Çık',()=>{closeModal();leaveGroup(G.code);}),
+  'join-do':async el=>{const c=$('#join-code').value; el.disabled=true; const ok=await joinGroup(c); el.disabled=false; if(ok) closeModal();},
+  'create-do':async el=>{const n=$('#new-group').value, d=$('#new-demo').checked; el.disabled=true; const ok=await createGroup(n,d); el.disabled=false; if(ok){closeModal();toast(`"${G.name}" oluşturuldu · Davet kodu ${G.code}`,'ok');}},
   'modal-bg':(el,e)=>{if(e.target===el)closeModal();},
   'confirm-yes':()=>{const cb=UI.confirmCb;UI.confirmCb=null;cb&&cb();},
   'goto':el=>go(el.dataset.v),
@@ -1327,8 +1512,8 @@ const ACT = {
   'edit-player':el=>playerForm(getP(el.dataset.id)),
   'del-player':el=>deletePlayer(el.dataset.id),
   'save-player':()=>savePlayerForm(),
-  'pf-pos':el=>{const r=el.dataset.r,a=UI.editing.positions;const i=a.indexOf(r);if(i>=0)a.splice(i,1);else a.push(r);el.classList.toggle('on',a.includes(r));},
-  'load-demo':()=>confirmBox('Demo Veriyi Yükle','25 demo oyuncu ve örnek bir geçmiş maç yüklenecek. <b style="color:var(--text)">Mevcut oyuncular ve maçlar silinir.</b>','Yükle',()=>{seedDemo();persist();closeModal();if(Cloud.on)toast('Buluta göndermek için "Buluta Yükle"yi kullanın');render();toast('Demo veriler yüklendi','ok');}),
+  'pf-pos':el=>{const r=el.dataset.r,a=UI.editing.positions;const i=a.indexOf(r);if(i>=0)a.splice(i,1);else a.push(r);el.classList.toggle('on',a.includes(r));refreshAIPreview();},
+  'pf-suggest':()=>{const d=formVals(); const a=aiRate(Object.assign(d,{positions:[]})); const best=a.ratings[a.order[0]]; UI.editing.positions=a.order.filter(c=>a.ratings[c]>=best-6).slice(0,3); document.querySelectorAll('#pf-pos button').forEach(b=>b.classList.toggle('on',UI.editing.positions.includes(b.dataset.r))); refreshAIPreview(); toast('Mevkiler reytinge göre önerildi','ok');},
   'toggle-sel':el=>{const id=el.dataset.id,a=S.draft.selected;const i=a.indexOf(id);if(i>=0)a.splice(i,1);else a.push(id);persist();refreshMatch();if(a.length===MATCH_SIZE&&i<0)toast('14 oyuncu seçildi — takımlar oluşturulabilir','ok');},
   'sel-all':()=>{const q=UI.mSearch.trim().toLocaleLowerCase('tr');S.players.filter(p=>!q||p.name.toLocaleLowerCase('tr').includes(q)).forEach(p=>{if(!S.draft.selected.includes(p.id))S.draft.selected.push(p.id);});persist();refreshMatch();},
   'sel-none':()=>{S.draft.selected=[];persist();refreshMatch();},
@@ -1358,18 +1543,12 @@ const ACT = {
   'w-reset':()=>{S.settings.weights=clone(DEFAULT_SETTINGS.weights);settingsChanged();render();toast('Varsayılan ağırlıklar yüklendi','ok');},
   't-auto':()=>{S.settings.autoFormation=!S.settings.autoFormation;settingsChanged();render();},
   't-form':el=>{const f=el.dataset.f,a=S.settings.formations;const i=a.indexOf(f);if(i>=0){if(a.length===1){toast('En az bir diziliş seçili olmalı','err');return;}a.splice(i,1);}else a.push(f);settingsChanged();render();},
-  'sb-save':async()=>{const u=$('#sb-url').value.trim(),k=$('#sb-key').value.trim();if(!Cloud.validUrl(u)){toast('Geçersiz Project URL (https://xxxx.supabase.co)','err');return;}if(!Cloud.validKey(k)){toast('Geçersiz anon key','err');return;}S.sb={url:u,key:k};persist();render();if(Cloud.on){const ok=await cloudPull(true);toast(ok?'Supabase bağlandı, veriler yüklendi':(UI.syncState==='err'?'Bağlantı kurulamadı — bilgileri ve tabloları kontrol edin':'Bağlandı. Bulut boş: "Buluta Yükle" ile gönderin'),UI.syncState==='err'?'err':'ok');render();}else setSync('local');},
-  'sb-pull':()=>confirmBox('Buluttan Çek','Bu cihazdaki veriler Supabase\'deki verilerle değiştirilecek.','Çek',async()=>{closeModal();await cloudPull(false);},false),
-  'sb-push':()=>confirmBox('Buluta Yükle','Bu cihazdaki tüm oyuncular, maçlar ve ayarlar Supabase\'e yazılacak.','Yükle',async()=>{closeModal();await cloudPushAll();},false),
-  'sb-clear':()=>{S.sb={url:'',key:''};persist();setSync(Cloud.on?'ok':'local');render();toast('Bulut bağlantısı kaldırıldı');},
   'export':()=>exportData(),
   'exp-copy':()=>copyText($('#exp-txt').value),
-  'exp-dl':()=>{try{const b=new Blob([$('#exp-txt').value],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`halisaha-yedek-${todayISO()}.json`;document.body.appendChild(a);a.click();a.remove();toast('Yedek indiriliyor','ok');}catch(e){toast('İndirme engellendi — Kopyala\'yı kullanın','err');}},
+  'exp-dl':()=>{try{const b=new Blob([$('#exp-txt').value],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`halisaha-${G.code}-${todayISO()}.json`;document.body.appendChild(a);a.click();a.remove();toast('Yedek indiriliyor','ok');}catch(e){toast('İndirme engellendi — Kopyala\'yı kullanın','err');}},
   'import':()=>importData(),
-  'imp-do':()=>{const t=$('#imp-txt').value.trim();if(!t){toast('Dosya seçin veya metin yapıştırın','err');return;}applyImport(t);},
-  'wipe':()=>confirmBox('Tüm Verileri Sil','Tüm oyuncular, maçlar ve katılım kayıtları <b style="color:var(--text)">bu cihazdan</b> silinecek. Bu işlem geri alınamaz.','Hepsini Sil',()=>{S.players=[];S.matches=[];S.attendance={};S.current=null;S.draft={date:todayISO(),selected:[]};persist();closeModal();render();toast('Veriler silindi','ok');})
+  'imp-do':()=>{const t=$('#imp-txt').value.trim();if(!t){toast('Dosya seçin veya metin yapıştırın','err');return;}applyImport(t);}
 };
-function saveAttendanceSilent(){S.attendance[S.draft.date]=S.draft.selected.slice();persist();cloud(()=>Cloud.upsert('attendance',[{match_date:S.draft.date,player_ids:S.draft.selected}],'match_date'));}
 
 document.addEventListener('click',e=>{
   const el=e.target.closest('[data-act]'); if(!el) return;
@@ -1379,7 +1558,7 @@ document.addEventListener('input',e=>{
   const el=e.target, k=el.dataset.inp; if(!k) return;
   if(k==='psearch'){UI.pSearch=el.value;$('#pgrid-wrap').innerHTML=playersGridHTML();}
   else if(k==='msearch'){UI.mSearch=el.value;$('#mlist').innerHTML=matchListHTML();}
-  else if(k==='pf-range'){const o=$('#out-'+el.dataset.k);if(o)o.textContent=el.value;}
+  else if(k==='pf-range'){const o=$('#out-'+el.dataset.k);if(o)o.textContent=el.value;refreshAIPreview();}
   else if(k==='weight'){S.settings.weights[el.dataset.k]=+el.value;const w=weightsNorm();['power','pos','stamina','gk'].forEach(x=>{$('#w-'+x).textContent='%'+Math.round(w[x]*100);});$('#wbar').innerHTML=wBar();const t=S.settings.weights;$('#wtot').textContent=t.power+t.pos+t.stamina+t.gk;}
   else if(k==='pen'){S.settings.offPenalty=+el.value;$('#penv').textContent='%'+el.value;}
 });
@@ -1391,7 +1570,6 @@ document.addEventListener('change',e=>{
     if(S.attendance[d]){S.draft.selected=S.attendance[d].filter(id=>getP(id));toast(`${fmtDate(d,{day:'numeric',month:'long'})} için kayıtlı katılım yüklendi`,'ok');}
     persist(); render();
   }
-  else if(k==='pf-use'){const r=$('#row-'+el.dataset.k);r.classList.toggle('off',!el.checked);r.querySelector('input[type=range]').disabled=!el.checked;}
   else if(k==='weight'||k==='pen'){
     if(S.settings.weights.power+S.settings.weights.pos+S.settings.weights.stamina+S.settings.weights.gk===0){S.settings.weights=clone(DEFAULT_SETTINGS.weights);toast('Ağırlıkların hepsi 0 olamaz','err');render();}
     settingsChanged();
@@ -1402,31 +1580,38 @@ document.addEventListener('change',e=>{
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){ if($('#modal-root').innerHTML&&!$('.gen')) closeModal(); else if(UI.swapFrom){UI.swapFrom=null;render();} }
   if(e.key==='Enter'&&e.target.id==='pf-name'){e.preventDefault();savePlayerForm();}
+  if(e.key==='Enter'&&e.target.id==='join-code'){e.preventDefault();$('[data-act="join-do"]').click();}
+  if(e.key==='Enter'&&e.target.id==='new-group'){e.preventDefault();$('[data-act="create-do"]').click();}
 });
 function route(){
   const h=(location.hash||'').replace('#','');
   UI.view=VIEWS.some(v=>v.id===h)?h:'oyuncular';
   if(UI.view==='takimlar') UI.animate=true;
-  closeModalIfNotGen(); render(); window.scrollTo(0,0);
+  if(!$('.gen')) $('#modal-root').innerHTML='';
+  render(); window.scrollTo(0,0);
 }
-function closeModalIfNotGen(){ if(!$('.gen')) $('#modal-root').innerHTML=''; }
 window.addEventListener('hashchange',route);
 
 /* ================== Başlat ================== */
 (async function init(){
-  if(!loadLocal()){ seedDemo(); persist(); }
-  if(!Array.isArray(S.draft.selected)) S.draft.selected=[];
-  if(APP_CONFIG.SUPABASE_URL || !(Cloud.validUrl(S.sb.url)&&Cloud.validKey(S.sb.key))){ S.sb={url:'',key:''}; persist(); } // hatalı/otomatik doldurulmuş bağlantı bilgisini temizle
-  setSync(Cloud.on?'busy':'local');
+  try{ localStorage.removeItem('halisaha_pro_v1'); localStorage.removeItem('halisaha_pro_v1_unsynced'); }catch(e){}
+  loadGroups();
+  if(G.code) loadLocal();
+  setSync(G.code?'busy':'local');
   route();
-  if(Cloud.on){
-    let uns=false; try{uns=localStorage.getItem(LS_KEY+'_unsynced')==='1';}catch(e){}
-    if(uns && S.players.length) await cloudPushAll(true); // önceki oturumda gönderilemeyen değişiklikler
-    await cloudPull(true);
-    // Diğer kullanıcıların değişikliklerini al
-    document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&Cloud.on) setTimeout(()=>cloudPull(true),800); });
-    setInterval(()=>{ if(document.visibilityState==='visible'&&Cloud.on&&UI.syncState!=='busy') cloudPull(true); },30000);
+  // Davet linki: ?g=KOD
+  const qp=new URLSearchParams(location.search); const inv=normCode(qp.get('g'));
+  if(inv){
+    history.replaceState(null,'',location.pathname+location.hash);
+    if(G.code!==inv){ if(G.list.some(x=>x.code===inv)) await switchGroup(inv); else await joinGroup(inv); }
   }
+  if(G.code){
+    let uns=false; try{uns=localStorage.getItem('hsp2_unsynced_'+G.code)==='1';}catch(e){}
+    if(uns && S.players.length) await cloudPushAll(true);
+    await cloudPull(true);
+  }
+  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&Cloud.on) setTimeout(()=>cloudPull(true),800); });
+  setInterval(()=>{ if(document.visibilityState==='visible'&&Cloud.on&&UI.syncState!=='busy') cloudPull(true); },30000);
 })();
 </script>
 </body>
