@@ -44,7 +44,7 @@ nav.tabs a{display:flex;align-items:center;gap:8px;padding:9px 14px;border-radiu
 nav.tabs a:hover{color:var(--text);background:var(--card)}
 nav.tabs a.on{color:var(--text);background:var(--card2);box-shadow:inset 0 0 0 1px var(--line2)}
 nav.tabs a.on svg{color:var(--green)}
-.sync{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);background:var(--card);border:1px solid var(--line);padding:6px 10px;border-radius:99px;white-space:nowrap}
+.sync{cursor:pointer;font:inherit;font-size:12px;margin-left:auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);background:var(--card);border:1px solid var(--line);padding:6px 10px;border-radius:99px;white-space:nowrap}
 .sync i{width:8px;height:8px;border-radius:50%;background:var(--amber);box-shadow:0 0 8px currentColor}
 .sync.ok i{background:var(--green)}.sync.err i{background:var(--red)}
 nav.bottom{display:none}
@@ -370,7 +370,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
       <div>Halı Saha <em>Pro</em></div>
     </div>
     <nav class="tabs" id="tabs"></nav>
-    <div class="sync" id="sync"><i></i><span>Yerel kayıt</span></div>
+    <button class="sync" id="sync" data-act="sync-info" type="button"><i></i><span>Yerel kayıt</span></button>
   </div>
 </header>
 <main id="app"></main>
@@ -467,9 +467,21 @@ const Cloud = {
   get on(){const c=this.cfg();return !!(c.url&&c.key);},
   async req(path,{method='GET',body,prefer}={}){
     const {url,key}=this.cfg();
-    const r=await fetch(`${url}/rest/v1/${path}`,{method,body,headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':'application/json',Prefer:prefer||'return=minimal'}});
-    if(!r.ok) throw new Error(`${r.status} ${await r.text()}`);
-    const t=await r.text(); return t?JSON.parse(t):null;
+    let lastErr;
+    for(let attempt=0;attempt<3;attempt++){
+      let r;
+      try{
+        const ctl=new AbortController(); const tm=setTimeout(()=>ctl.abort(),15000);
+        r=await fetch(`${url}/rest/v1/${path}`,{method,body,signal:ctl.signal,cache:'no-store',headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':'application/json',Prefer:prefer||'return=minimal'}});
+        clearTimeout(tm);
+      }catch(e){ lastErr=Object.assign(new Error('Ağ bağlantısı kurulamadı'),{network:true}); await new Promise(z=>setTimeout(z,800*(attempt+1))); continue; }
+      if(r.ok){ const t=await r.text(); return t?JSON.parse(t):null; }
+      const txt=await r.text().catch(()=> '');
+      lastErr=Object.assign(new Error(`${r.status} ${txt}`.slice(0,300)),{status:r.status,network:r.status>=500||r.status===429});
+      if(!lastErr.network) break;
+      await new Promise(z=>setTimeout(z,800*(attempt+1)));
+    }
+    throw lastErr;
   },
   select(t){return this.req(`${t}?select=*`);},
   upsert(t,rows,conflict='id'){return this.req(`${t}?on_conflict=${conflict}`,{method:'POST',body:JSON.stringify(rows),prefer:'resolution=merge-duplicates,return=minimal'});},
@@ -485,15 +497,37 @@ const mFromRow = r=>({id:r.id,date:r.match_date,playerIds:r.player_ids||[],teamA
 function setSync(state,msg){
   UI.syncState=state; const el=$('#sync'); if(!el) return;
   el.className='sync '+(state==='ok'?'ok':state==='err'?'err':'');
-  el.querySelector('span').textContent = msg || (state==='ok'?'Supabase senkron':state==='err'?'Senkron hatası':state==='busy'?'Senkronize ediliyor…':'Yerel kayıt');
+  const q=Q.ops.length;
+  el.querySelector('span').textContent = msg || (state==='ok'?'Supabase senkron':state==='err'?'Senkron hatası':state==='wait'?`Bağlantı bekleniyor${q?` (${q})`:''}`:state==='busy'?'Senkronize ediliyor…':'Yerel kayıt');
+  el.title = UI.lastErr ? 'Son hata: '+UI.lastErr : '';
 }
+/* Yazma kuyruğu: işlemler sırayla gönderilir; bağlantı koparsa kaybolmaz, otomatik tekrar denenir */
+const Q={ops:[],running:false,timer:null,delay:3000};
 function cloud(fn){
   if(!Cloud.on) return;
-  setSync('busy');
-  fn().then(()=>setSync('ok')).catch(e=>{console.warn('Supabase',e);setSync('err');});
+  Q.ops.push(fn); markUnsynced(true); flushQueue();
 }
+function markUnsynced(v){ try{ v?localStorage.setItem(LS_KEY+'_unsynced','1'):localStorage.removeItem(LS_KEY+'_unsynced'); }catch(e){} }
+async function flushQueue(){
+  if(Q.running||!Q.ops.length) return;
+  Q.running=true; clearTimeout(Q.timer); setSync('busy');
+  while(Q.ops.length){
+    try{ await Q.ops[0](); Q.ops.shift(); Q.delay=3000; UI.lastErr=null; }
+    catch(e){
+      console.warn('Supabase',e); UI.lastErr=e.message;
+      if(e.network){ // geçici bağlantı sorunu: daha sonra tekrar dene
+        Q.running=false; setSync('wait');
+        Q.timer=setTimeout(flushQueue,Q.delay); Q.delay=Math.min(Q.delay*2,30000); return;
+      }
+      Q.ops.shift(); setSync('err'); toast('Kaydedilemedi: '+e.message.slice(0,80),'err');
+    }
+  }
+  Q.running=false; markUnsynced(false); if(UI.syncState!=='err') setSync('ok');
+}
+window.addEventListener('online',()=>{ Q.delay=3000; flushQueue(); });
 async function cloudPull(silent){
   if(!Cloud.on) return false;
+  if(Q.ops.length||Q.running){ flushQueue(); return false; } // bekleyen yazma varken çekme yapma
   setSync('busy');
   try{
     const [pl,ma,se,at]=await Promise.all([Cloud.select('players'),Cloud.select('matches'),Cloud.select('app_settings'),Cloud.select('attendance')]);
@@ -511,7 +545,7 @@ async function cloudPull(silent){
     }
     if(S.players.length){ await cloudPushAll(true); return true; }
     setSync('ok'); if(!silent) toast('Bulut veritabanı boş.'); return false;
-  }catch(e){console.warn(e);setSync('err');if(!silent) toast('Supabase bağlantısı kurulamadı: '+e.message.slice(0,90),'err');return false;}
+  }catch(e){console.warn(e);UI.lastErr=e.message;setSync(e.network?'wait':'err');if(!silent) toast('Supabase bağlantısı kurulamadı: '+e.message.slice(0,90),'err');return false;}
 }
 async function cloudPushAll(quiet){
   if(!Cloud.on){toast('Önce Supabase bilgilerini girin','err');return;}
@@ -523,7 +557,8 @@ async function cloudPushAll(quiet){
     const at=Object.entries(S.attendance).map(([d,ids])=>({match_date:d,player_ids:ids}));
     if(at.length) await Cloud.upsert('attendance',at,'match_date');
     setSync('ok'); if(!quiet) toast('Tüm veriler Supabase\'e yüklendi','ok');
-  }catch(e){console.warn(e);setSync('err');toast('Yükleme başarısız: '+e.message.slice(0,90),'err');}
+    markUnsynced(false);
+  }catch(e){console.warn(e);UI.lastErr=e.message;setSync(e.network?'wait':'err');if(!quiet) toast('Yükleme başarısız: '+e.message.slice(0,90),'err');}
 }
 
 /* ================== Dengeleme Motoru ==================
@@ -1271,6 +1306,13 @@ function applyImport(txt){
 /* ================== Olaylar ================== */
 const ACT = {
   'close-modal':()=>closeModal(),
+  'sync-info':()=>{
+    const st=UI.syncState, q=Q.ops.length;
+    const msg=!Cloud.on?'Bulut bağlantısı yok; veriler bu cihazda saklanıyor.':st==='ok'?'Tüm değişiklikler Supabase\'e kaydedildi. Diğer kullanıcıların değişiklikleri otomatik alınır.':st==='wait'?`İnternet bağlantısı bekleniyor. ${q} değişiklik sırada ve bağlantı gelince otomatik gönderilecek; hiçbir şey kaybolmaz.`:st==='busy'?'Senkronize ediliyor…':'Son işlem sunucu tarafından reddedildi.';
+    openModal('Senkronizasyon',`<p style="line-height:1.55">${msg}</p>${UI.lastErr?`<p class="small muted" style="word-break:break-word">Son hata: ${esc(UI.lastErr)}</p>`:''}`,
+      `<button class="btn ghost" data-act="close-modal">Kapat</button>${Cloud.on?'<button class="btn primary" data-act="sync-now">Şimdi Senkronize Et</button>':''}`,'sm');
+  },
+  'sync-now':async()=>{closeModal();Q.delay=3000;if(Q.ops.length){await flushQueue();}else{await cloudPull(true);}if(UI.syncState==='ok')toast('Senkronizasyon tamam','ok');},
   'modal-bg':(el,e)=>{if(e.target===el)closeModal();},
   'confirm-yes':()=>{const cb=UI.confirmCb;UI.confirmCb=null;cb&&cb();},
   'goto':el=>go(el.dataset.v),
@@ -1370,10 +1412,12 @@ window.addEventListener('hashchange',route);
   setSync(Cloud.on?'busy':'local');
   route();
   if(Cloud.on){
+    let uns=false; try{uns=localStorage.getItem(LS_KEY+'_unsynced')==='1';}catch(e){}
+    if(uns && S.players.length) await cloudPushAll(true); // önceki oturumda gönderilemeyen değişiklikler
     await cloudPull(true);
     // Diğer kullanıcıların değişikliklerini al
-    document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&Cloud.on) cloudPull(true); });
-    setInterval(()=>{ if(document.visibilityState==='visible'&&Cloud.on&&UI.syncState!=='busy') cloudPull(true); },45000);
+    document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&Cloud.on) setTimeout(()=>cloudPull(true),800); });
+    setInterval(()=>{ if(document.visibilityState==='visible'&&Cloud.on&&UI.syncState!=='busy') cloudPull(true); },30000);
   }
 })();
 </script>
