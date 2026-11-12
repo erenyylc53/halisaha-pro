@@ -539,7 +539,24 @@ const initials = n=>String(n||'?').trim().split(/\s+/).map(x=>x[0]).slice(0,2).j
 const scoreColor = v=>v>=80?'#3ddc84':v>=65?'#a3e635':v>=50?'#f5b301':'#ef4444';
 
 /* ================== Durum ================== */
-const G = {list:[], code:null, id:null, name:''};      // aktif grup
+const G = {list:[], code:null, id:null, name:'', hasPw:false};      // aktif grup
+/* Düzenleme şifresi: oyuncu ve grup ayarı değişiklikleri veritabanında şifreyle korunur */
+const EDIT = {pw:'', ok:false};
+const editKey = ()=>'hsp2_editpw_'+G.code;
+function loadEdit(){ try{ EDIT.pw=localStorage.getItem(editKey())||''; }catch(e){ EDIT.pw=''; } EDIT.ok=!!EDIT.pw; }
+const canEdit = ()=>!G.hasPw||EDIT.ok;
+function guard(fn){ return (...a)=>{ if(canEdit()) return fn(...a); unlockModal(()=>fn(...a)); }; }
+async function rpc(name,body){ return Cloud.req('rpc/'+name,{method:'POST',body:JSON.stringify(body),prefer:'return=representation'}); }
+async function refreshGroupInfo(){
+  try{ const r=await Cloud.req('groups?select=id,name,has_password'); const g=(r||[])[0]; if(g){ const was=G.hasPw; G.hasPw=!!g.has_password; G.name=g.name; const e=G.list.find(x=>x.code===G.code); if(e){e.name=g.name;e.hasPw=G.hasPw;} persistGroups(); if(was!==G.hasPw) render(); } }catch(e){}
+}
+function unlockModal(after){
+  UI.afterUnlock=after||null;
+  openModal('Düzenleme Kilitli',`<p class="small muted" style="line-height:1.55">Oyuncu eklemek, puan değiştirmek, silmek ve grup ayarlarını değiştirmek için grubu kuran kişinin belirlediği <b style="color:var(--text)">düzenleme şifresi</b> gerekli. Takım oluşturma ve maç kaydetme herkese açık.</p>
+    <div class="field"><label>Düzenleme şifresi</label><input type="password" id="unlock-pw" autocomplete="off" placeholder="Şifre"></div>`,
+    `<button class="btn ghost" data-act="close-modal">Vazgeç</button><button class="btn primary" data-act="unlock-do">${icon(I.unlock)} Kilidi Aç</button>`,'sm');
+  setTimeout(()=>{const i=$('#unlock-pw'); if(i) i.focus();},50);
+}
 const S = {
   players:[], matches:[], attendance:{}, settings:clone(DEFAULT_SETTINGS),
   draft:{date:todayISO(), selected:[]}, current:null
@@ -548,7 +565,7 @@ const UI = {view:'oyuncular', pSearch:'', pSort:'name', mSearch:'', onlySel:fals
 const dataKey = ()=>'hsp2_data_'+G.code;
 
 function persistGroups(){ try{localStorage.setItem(LS_GROUPS,JSON.stringify({list:G.list,current:G.code}));}catch(e){} }
-function loadGroups(){ try{const d=JSON.parse(localStorage.getItem(LS_GROUPS)||'null'); if(d){G.list=d.list||[]; const g=G.list.find(x=>x.code===d.current); if(g) Object.assign(G,{code:g.code,id:g.id,name:g.name});}}catch(e){} }
+function loadGroups(){ try{const d=JSON.parse(localStorage.getItem(LS_GROUPS)||'null'); if(d){G.list=d.list||[]; const g=G.list.find(x=>x.code===d.current); if(g) Object.assign(G,{code:g.code,id:g.id,name:g.name,hasPw:!!g.hasPw});}}catch(e){} if(G.code) loadEdit(); }
 function persist(){
   if(!G.code) return;
   try{localStorage.setItem(dataKey(), JSON.stringify({players:S.players,matches:S.matches,attendance:S.attendance,settings:S.settings,draft:S.draft,current:S.current}));}catch(e){}
@@ -621,7 +638,7 @@ const Cloud = {
       let r;
       try{
         const ctl=new AbortController(); const tm=setTimeout(()=>ctl.abort(),15000);
-        r=await fetch(`${url}/rest/v1/${path}`,{method,body,signal:ctl.signal,cache:'no-store',headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':'application/json','x-group-code':code||G.code||'',Prefer:prefer||'return=minimal'}});
+        r=await fetch(`${url}/rest/v1/${path}`,{method,body,signal:ctl.signal,cache:'no-store',headers:{apikey:key,Authorization:`Bearer ${key}`,'Content-Type':'application/json','x-group-code':code||G.code||'','x-edit-pass':(code&&code!==G.code)?'':EDIT.pw,Prefer:prefer||'return=minimal'}});
         clearTimeout(tm);
       }catch(e){ lastErr=Object.assign(new Error('Ağ bağlantısı kurulamadı'),{network:true}); await new Promise(z=>setTimeout(z,800*(attempt+1))); continue; }
       if(r.ok){ const t=await r.text(); return t?JSON.parse(t):null; }
@@ -677,7 +694,9 @@ async function flushQueue(){
     catch(e){
       console.warn('Supabase',e); UI.lastErr=e.message;
       if(e.network){ Q.running=false; setSync('wait'); Q.timer=setTimeout(flushQueue,Q.delay); Q.delay=Math.min(Q.delay*2,30000); return; }
-      Q.ops.shift(); setSync('err'); toast('Kaydedilemedi: '+e.message.slice(0,80),'err');
+      Q.ops.shift();
+      if(/42501|row-level security|401|403/.test(e.message)){ EDIT.ok=false; G.hasPw=true; toast('Bu değişiklik için düzenleme şifresi gerekli — kaydedilmedi','err'); setSync('ok'); Q.ops=[]; Q.running=false; markUnsynced(false); cloudPull(true); return; }
+      setSync('err'); toast('Kaydedilemedi: '+e.message.slice(0,80),'err');
     }
   }
   Q.running=false; markUnsynced(false); if(UI.syncState!=='err') setSync('ok');
@@ -688,6 +707,7 @@ async function cloudPull(silent){
   if(Q.ops.length||Q.running){ flushQueue(); return false; }
   const code=G.code;
   setSync('busy');
+  refreshGroupInfo();
   try{
     const [pl,ma,se,at]=await Promise.all([Cloud.select('players'),Cloud.select('matches'),Cloud.select('app_settings'),Cloud.select('attendance')]);
     if(code!==G.code) return false;
@@ -729,21 +749,28 @@ const inviteLink=code=>`${location.origin}${location.pathname}?g=${code}`;
 async function joinGroup(code,{silent}={}){
   code=normCode(code); if(code.length<4){toast('Geçersiz grup kodu','err');return false;}
   let g=null;
-  try{ const r=await Cloud.req('groups?select=id,name,code',{code}); g=(r||[])[0]; }
+  try{ const r=await Cloud.req('groups?select=id,name,code,has_password',{code}); g=(r||[])[0]; }
   catch(e){ toast(e.network?'İnternet bağlantısı yok, tekrar deneyin':'Grup bulunamadı','err'); return false; }
   if(!g){ toast('Bu koda ait grup bulunamadı','err'); return false; }
-  if(!G.list.some(x=>x.code===g.code)) G.list.push({id:g.id,name:g.name,code:g.code});
+  const ex=G.list.find(x=>x.code===g.code); if(ex) ex.hasPw=!!g.has_password; else G.list.push({id:g.id,name:g.name,code:g.code,hasPw:!!g.has_password});
   await switchGroup(g.code);
   if(!silent) toast(`"${g.name}" grubuna katıldınız`,'ok');
   return true;
 }
-async function createGroup(name,withDemo){
+async function createGroup(name,withDemo,pw){
   name=String(name||'').trim(); if(name.length<2){toast('Grup adı girin','err');return false;}
+  if(!pw||pw.length<4){toast('En az 4 karakterlik bir düzenleme şifresi belirleyin','err');return false;}
   const code=newCode();
   let g;
-  try{ const r=await Cloud.req('groups',{method:'POST',code,body:JSON.stringify([{name,code}]),prefer:'return=representation'}); g=(r||[])[0]; }
+  try{
+    await Cloud.req('groups',{method:'POST',code,body:JSON.stringify([{name,code}])});
+    const r=await Cloud.req('groups?select=id,name,code',{code}); g=(r||[])[0];
+    if(!g) throw new Error('grup okunamadı');
+    await Cloud.req('rpc/set_edit_password',{method:'POST',code,body:JSON.stringify({new_pw:pw}),prefer:'return=representation'});
+  }
   catch(e){ toast('Grup oluşturulamadı: '+e.message.slice(0,80),'err'); return false; }
-  G.list.push({id:g.id,name:g.name,code:g.code});
+  G.list.push({id:g.id,name:g.name,code:g.code,hasPw:true});
+  try{ localStorage.setItem('hsp2_editpw_'+g.code,pw); }catch(e){}
   await switchGroup(g.code,{fresh:true});
   if(withDemo){ seedDemo(); persist(); await cloudPushAll(true); render(); }
   else { await Cloud.upsert('app_settings',[setRow()]).catch(()=>{}); }
@@ -752,7 +779,7 @@ async function createGroup(name,withDemo){
 async function switchGroup(code,{fresh}={}){
   const g=G.list.find(x=>x.code===code); if(!g) return;
   persist();
-  Object.assign(G,{code:g.code,id:g.id,name:g.name}); persistGroups();
+  Object.assign(G,{code:g.code,id:g.id,name:g.name,hasPw:!!g.hasPw}); persistGroups(); loadEdit();
   Q.ops=[]; resetAI(); loadLocal(); UI.swapFrom=null; UI.openHist=null;
   render();
   if(!fresh) await cloudPull(true);
@@ -984,6 +1011,8 @@ function vWelcome(){
         <h3>${icon(I.plus,20)} Yeni Grup Oluştur</h3>
         <p class="small muted" style="margin-bottom:12px">Kendi halı saha grubunuzu kurun, davet linkiyle arkadaşlarınızı ekleyin.</p>
         <input type="text" id="new-group" placeholder="Grup adı (örn. Cuma Akşamı)" maxlength="40" autocomplete="off" style="margin-bottom:10px">
+        <input type="password" id="new-pw" placeholder="Düzenleme şifresi (en az 4 karakter)" autocomplete="new-password" style="margin-bottom:6px">
+        <p class="small muted" style="margin-bottom:10px">Oyuncu ekleme/düzenleme yalnızca bu şifreyle yapılabilir. Şifreyi unutmayın.</p>
         <label class="row small muted" style="gap:8px;margin-bottom:12px"><input type="checkbox" id="new-demo"> Demo oyuncularla başla</label>
         <button class="btn primary" data-act="create-do" style="width:100%">${icon(I.plus)} Grubu Oluştur</button>
       </div>
@@ -1009,6 +1038,7 @@ function groupModal(){
     <div class="row" style="flex-wrap:nowrap"><input type="text" id="join-code" placeholder="Davet kodu" maxlength="12" autocomplete="off" spellcheck="false" style="text-transform:uppercase;letter-spacing:2px;font-weight:700"><button class="btn" data-act="join-do">Katıl</button></div>
     <div class="sect">Yeni grup</div>
     <input type="text" id="new-group" placeholder="Grup adı" maxlength="40" autocomplete="off">
+    <input type="password" id="new-pw" placeholder="Düzenleme şifresi (en az 4 karakter)" autocomplete="new-password">
     <label class="row small muted" style="gap:8px"><input type="checkbox" id="new-demo"> Demo oyuncularla başla</label>
     <button class="btn primary" data-act="create-do">${icon(I.plus)} Grubu Oluştur</button>`,'','sm');
 }
@@ -1055,7 +1085,8 @@ function playersGridHTML(){
 function vPlayers(){
   const n=S.players.length, gks=S.players.filter(p=>p.positions.includes('GK')).length;
   return `<div class="view-head"><div><h1>Oyuncular</h1><p>${esc(G.name)} · Genel reytingi yapay zeka hesaplar (99 üzerinden).</p></div>
-    <button class="btn primary" data-act="new-player">${icon(I.plus)} Oyuncu Ekle</button></div>
+    <div class="row">${G.hasPw?(EDIT.ok?`<button class="btn sm ghost" data-act="lock-now" title="Bu cihazda kilitle">${icon(I.unlock,16)} Düzenleme açık</button>`:`<button class="btn sm" data-act="unlock-open">${icon(I.lock,16)} Kilitli · Şifre gir</button>`):''}
+    <button class="btn primary" data-act="new-player">${icon(I.plus)} Oyuncu Ekle</button></div></div>
   <div class="stats-strip">
     <div class="stat"><span>Oyuncu</span><b>${n}</b></div>
     <div class="stat"><span>Ort. Reyting</span><b>${fmt(avg(S.players.map(overallOf)))}</b></div>
@@ -1504,6 +1535,22 @@ function vSettings(){
       <p class="small muted">Oyuncu profilinde seçili olmayan bir mevkide oynatıldığında mevki puanına uygulanır.</p>
     </div>
     <div class="card">
+      <h3>${icon(I.lock,20)} Düzenleme Şifresi</h3>
+      ${!G.hasPw?`<p class="small muted" style="margin-bottom:12px">Bu grupta henüz şifre yok; herkes oyuncuları düzenleyebilir. Grubu kuran kişi olarak bir şifre belirleyin.</p>
+        <div class="field" style="margin-bottom:8px"><input type="password" id="pw-new" placeholder="Yeni şifre (en az 4 karakter)" autocomplete="new-password"></div>
+        <div class="field" style="margin-bottom:12px"><input type="password" id="pw-confirm" placeholder="Şifre tekrar" autocomplete="new-password"></div>
+        <button class="btn primary sm" data-act="pw-set">${icon(I.lock,16)} Şifreyi Belirle</button>`
+      : EDIT.ok?`<div class="status ok" style="margin-bottom:12px">${icon(I.unlock,16)} Bu cihazda düzenleme açık.</div>
+        <details><summary class="small" style="cursor:pointer;margin-bottom:10px">Şifreyi değiştir</summary>
+        <div class="field" style="margin-bottom:8px"><input type="password" id="pw-old" placeholder="Mevcut şifre" autocomplete="current-password"></div>
+        <div class="field" style="margin-bottom:8px"><input type="password" id="pw-new" placeholder="Yeni şifre" autocomplete="new-password"></div>
+        <div class="field" style="margin-bottom:12px"><input type="password" id="pw-confirm" placeholder="Yeni şifre tekrar" autocomplete="new-password"></div>
+        <button class="btn sm" data-act="pw-set">Şifreyi Değiştir</button></details>
+        <button class="btn sm ghost" data-act="lock-now" style="margin-top:10px">${icon(I.lock,16)} Bu cihazda kilitle</button>`
+      :`<div class="status warn" style="margin-bottom:12px">${icon(I.lock,16)} Düzenleme kilitli. Oyuncu ve ayar değişiklikleri için şifre gerekli.</div>
+        <button class="btn primary sm" data-act="unlock-open">${icon(I.unlock,16)} Kilidi Aç</button>`}
+    </div>
+    <div class="card">
       <h3>${icon(I.users,20)} Grup</h3>
       <p class="small muted" style="margin-bottom:12px">Bu gruptaki herkes aynı oyuncu listesini ve maç geçmişini görür. Başka gruplar bu verilere erişemez.</p>
       <div class="row"><span class="chip">Grup <b style="color:var(--text)">${esc(G.name)}</b></span><span class="chip">Kod <b style="color:var(--text);letter-spacing:1.5px">${G.code}</b></span></div>
@@ -1558,17 +1605,26 @@ const ACT = {
   },
   'sync-now':async()=>{closeModal();Q.delay=3000;if(Q.ops.length){await flushQueue();}else{await cloudPull(true);}if(UI.syncState==='ok')toast('Senkronizasyon tamam','ok');},
   'grp-open':()=>groupModal(),
+  'unlock-open':()=>unlockModal(),
+  'unlock-do':async el=>{const pw=$('#unlock-pw').value; if(!pw){toast('Şifreyi girin','err');return;} el.disabled=true; let ok=false; try{ ok=await rpc('check_edit_password',{pw}); }catch(e){ toast('Kontrol edilemedi: '+e.message.slice(0,60),'err'); } el.disabled=false;
+    if(ok===true){ EDIT.pw=pw; EDIT.ok=true; try{localStorage.setItem(editKey(),pw);}catch(e){} const f=UI.afterUnlock; closeModal(); render(); toast('Düzenleme kilidi açıldı','ok'); if(f) f(); } else if(ok===false) toast('Şifre yanlış','err'); },
+  'lock-now':()=>{ EDIT.pw=''; EDIT.ok=false; try{localStorage.removeItem(editKey());}catch(e){} render(); toast('Düzenleme bu cihazda kilitlendi','ok'); },
+  'pw-set':async el=>{ const nw=$('#pw-new').value, cf=$('#pw-confirm').value, old=($('#pw-old')||{}).value||null;
+    if(nw.length<4){toast('Şifre en az 4 karakter olmalı','err');return;} if(nw!==cf){toast('Şifreler eşleşmiyor','err');return;}
+    el.disabled=true; let ok=false; try{ ok=await rpc('set_edit_password',{new_pw:nw,old_pw:old}); }catch(e){ toast('Kaydedilemedi: '+e.message.slice(0,80),'err'); } el.disabled=false;
+    if(ok===true){ G.hasPw=true; EDIT.pw=nw; EDIT.ok=true; try{localStorage.setItem(editKey(),nw);}catch(e){} const g=G.list.find(x=>x.code===G.code); if(g) g.hasPw=true; persistGroups(); render(); toast('Düzenleme şifresi kaydedildi','ok'); }
+    else if(ok===false) toast('Mevcut şifre yanlış','err'); },
   'grp-switch':el=>{closeModal();switchGroup(el.dataset.code).then(()=>toast(`"${G.name}" grubuna geçildi`,'ok'));},
   'grp-invite':()=>copyText(`${G.name} halı saha grubuna katıl: ${inviteLink(G.code)}\nDavet kodu: ${G.code}`),
   'grp-leave':()=>confirmBox('Gruptan Çık',`<b style="color:var(--text)">${esc(G.name)}</b> grubu bu cihazdan kaldırılacak. Grup verileri silinmez; davet koduyla tekrar katılabilirsiniz.`,'Çık',()=>{closeModal();leaveGroup(G.code);}),
   'join-do':async el=>{const c=$('#join-code').value; el.disabled=true; const ok=await joinGroup(c); el.disabled=false; if(ok) closeModal();},
-  'create-do':async el=>{const n=$('#new-group').value, d=$('#new-demo').checked; el.disabled=true; const ok=await createGroup(n,d); el.disabled=false; if(ok){closeModal();toast(`"${G.name}" oluşturuldu · Davet kodu ${G.code}`,'ok');}},
+  'create-do':async el=>{const n=$('#new-group').value, d=$('#new-demo').checked, pw=($('#new-pw')||{}).value||''; el.disabled=true; const ok=await createGroup(n,d,pw); el.disabled=false; if(ok){closeModal();toast(`"${G.name}" oluşturuldu · Davet kodu ${G.code}`,'ok');}},
   'modal-bg':(el,e)=>{if(e.target===el)closeModal();},
   'confirm-yes':()=>{const cb=UI.confirmCb;UI.confirmCb=null;cb&&cb();},
   'goto':el=>go(el.dataset.v),
-  'new-player':()=>playerForm(null),
-  'edit-player':el=>playerForm(getP(el.dataset.id)),
-  'del-player':el=>deletePlayer(el.dataset.id),
+  'new-player':guard(()=>playerForm(null)),
+  'edit-player':guard(el=>playerForm(getP(el.dataset.id))),
+  'del-player':guard(el=>deletePlayer(el.dataset.id)),
   'save-player':()=>savePlayerForm(),
   'pf-pos':el=>{const r=el.dataset.r,a=UI.editing.positions;const i=a.indexOf(r);if(i>=0)a.splice(i,1);else a.push(r);el.classList.toggle('on',a.includes(r));refreshAIPreview();},
   'pf-suggest':()=>{const d=formVals(); const a=aiRate(Object.assign(d,{positions:[]})); const best=a.ratings[a.order[0]]; UI.editing.positions=a.order.filter(c=>a.ratings[c]>=best-6).slice(0,3); document.querySelectorAll('#pf-pos button').forEach(b=>b.classList.toggle('on',UI.editing.positions.includes(b.dataset.r))); refreshAIPreview(); toast('Mevkiler reytinge göre önerildi','ok');},
@@ -1598,13 +1654,13 @@ const ACT = {
   'hist-open':el=>{const m=S.matches.find(x=>x.id===el.dataset.id);S.current={id:uid(),matchId:m.id,date:m.date,playerIds:m.playerIds.slice(),teamA:clone(m.teamA),teamB:clone(m.teamB),locked:false,saved:true,scoreA:m.scoreA,scoreB:m.scoreB,createdAt:m.createdAt};computeMetrics(S.current);UI.animate=true;persist();go('takimlar');},
   'hist-reuse':el=>{const m=S.matches.find(x=>x.id===el.dataset.id);S.draft={date:todayISO(),selected:m.playerIds.filter(id=>getP(id))};persist();go('mac');toast('Kadro yeni maça aktarıldı','ok');},
   'hist-del':el=>{const id=el.dataset.id;confirmBox('Maçı Sil','Bu maç kaydı kalıcı olarak silinecek.','Sil',()=>{S.matches=S.matches.filter(x=>x.id!==id);if(S.current&&S.current.matchId===id){S.current.matchId=null;S.current.saved=false;}persist();cloud(()=>Cloud.del('matches','id',id));closeModal();render();toast('Maç silindi','ok');});},
-  'w-reset':()=>{S.settings.weights=clone(DEFAULT_SETTINGS.weights);settingsChanged();render();toast('Varsayılan ağırlıklar yüklendi','ok');},
-  't-auto':()=>{S.settings.autoFormation=!S.settings.autoFormation;settingsChanged();render();},
-  't-form':el=>{const f=el.dataset.f,a=S.settings.formations;const i=a.indexOf(f);if(i>=0){if(a.length===1){toast('En az bir diziliş seçili olmalı','err');return;}a.splice(i,1);}else a.push(f);settingsChanged();render();},
+  'w-reset':guard(()=>{S.settings.weights=clone(DEFAULT_SETTINGS.weights);settingsChanged();render();toast('Varsayılan ağırlıklar yüklendi','ok');}),
+  't-auto':guard(()=>{S.settings.autoFormation=!S.settings.autoFormation;settingsChanged();render();}),
+  't-form':guard(el=>{const f=el.dataset.f,a=S.settings.formations;const i=a.indexOf(f);if(i>=0){if(a.length===1){toast('En az bir diziliş seçili olmalı','err');return;}a.splice(i,1);}else a.push(f);settingsChanged();render();}),
   'export':()=>exportData(),
   'exp-copy':()=>copyText($('#exp-txt').value),
   'exp-dl':()=>{try{const b=new Blob([$('#exp-txt').value],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`halisaha-${G.code}-${todayISO()}.json`;document.body.appendChild(a);a.click();a.remove();toast('Yedek indiriliyor','ok');}catch(e){toast('İndirme engellendi — Kopyala\'yı kullanın','err');}},
-  'import':()=>importData(),
+  'import':guard(()=>importData()),
   'imp-do':()=>{const t=$('#imp-txt').value.trim();if(!t){toast('Dosya seçin veya metin yapıştırın','err');return;}applyImport(t);}
 };
 
@@ -1628,6 +1684,7 @@ document.addEventListener('change',e=>{
     if(S.attendance[d]){S.draft.selected=S.attendance[d].filter(id=>getP(id));toast(`${fmtDate(d,{day:'numeric',month:'long'})} için kayıtlı katılım yüklendi`,'ok');}
     persist(); render();
   }
+  else if((k==='weight'||k==='pen'||k==='deff')&&!canEdit()){ S.settings=Object.assign(clone(DEFAULT_SETTINGS),S.settings); cloudPull(true); unlockModal(); return; }
   else if(k==='weight'||k==='pen'){
     if(S.settings.weights.power+S.settings.weights.pos+S.settings.weights.stamina+S.settings.weights.gk===0){S.settings.weights=clone(DEFAULT_SETTINGS.weights);toast('Ağırlıkların hepsi 0 olamaz','err');render();}
     settingsChanged();
@@ -1638,6 +1695,7 @@ document.addEventListener('change',e=>{
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){ if($('#modal-root').innerHTML&&!$('.gen')) closeModal(); else if(UI.swapFrom){UI.swapFrom=null;render();} }
   if(e.key==='Enter'&&e.target.id==='pf-name'){e.preventDefault();savePlayerForm();}
+  if(e.key==='Enter'&&e.target.id==='unlock-pw'){e.preventDefault();$('[data-act="unlock-do"]').click();}
   if(e.key==='Enter'&&e.target.id==='join-code'){e.preventDefault();$('[data-act="join-do"]').click();}
   if(e.key==='Enter'&&e.target.id==='new-group'){e.preventDefault();$('[data-act="create-do"]').click();}
 });
