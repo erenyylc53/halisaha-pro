@@ -445,6 +445,38 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .fm-fam .fm-in select,.fm-personal .fm-in select{width:auto;max-width:120px;font-weight:600;font-size:12.5px}
 .xl-list{max-height:240px;overflow:auto;display:grid;gap:4px;margin-top:10px;font-size:13px}
 @media (max-width:640px){.fm-form{grid-template-columns:1fr 1fr}.fm-fam,.fm-personal{grid-template-columns:1fr 1fr 1fr}.fm-form .fm-in input{width:48px}.fm-in{font-size:12px}}
+.man-sum{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch}
+.man-side{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+.man-side b{font-size:15px;color:var(--text)}
+.man-side.A{border-color:rgba(59,130,246,.45);background:rgba(59,130,246,.08)}
+.man-side.B{border-color:rgba(239,68,68,.45);background:rgba(239,68,68,.08);text-align:right}
+.man-mid{display:grid;place-items:center;align-content:center;font-family:var(--cond);font-size:22px;font-weight:800;min-width:70px}
+.man-mid small{font-family:var(--font);font-size:10.5px;color:var(--muted);font-weight:700;text-transform:uppercase}
+.man-list{display:grid;gap:6px}
+.man-row{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:12px;border:1px solid var(--line);border-left-width:4px}
+.man-row.A{border-left-color:var(--blue)}.man-row.B{border-left-color:var(--red)}
+.man-row .avatar{width:34px;height:34px;font-size:14px;border-radius:10px}
+.man-row .nm{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.man-row .nm b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+.man-row .ov{font-family:var(--cond);font-size:20px;min-width:28px;text-align:right}
+.man-seg{display:flex;gap:3px;background:var(--card2);border-radius:10px;padding:3px}
+.man-seg button{width:34px;height:30px;border-radius:8px;font-weight:800;color:var(--muted)}
+.man-seg button.on{background:var(--card3);color:var(--text)}
+.man-seg button.on.A{background:var(--blue);color:#fff}.man-seg button.on.B{background:var(--red);color:#fff}
+.pitch-col .tok{touch-action:none;cursor:grab}
+body.dnd,body.dnd *{cursor:grabbing!important;user-select:none}
+.tok.dragging,.tp.dragging{opacity:.3}
+.dnd-ghost{position:fixed;z-index:300;pointer-events:none;transform:translate(-50%,-50%) scale(1.12);display:flex;flex-direction:column;align-items:center;gap:3px;filter:drop-shadow(0 10px 18px rgba(0,0,0,.5))}
+.dnd-ghost .disc{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:var(--cond);font-weight:800;font-size:17px;color:#fff;border:3px solid #fff}
+.dnd-ghost.A .disc{background:radial-gradient(circle at 35% 30%,#60a5fa,#1d4ed8)}.dnd-ghost.B .disc{background:radial-gradient(circle at 35% 30%,#f87171,#b91c1c)}
+.dnd-ghost .lbl{font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.7);padding:2px 7px;border-radius:6px}
+.tok.dropt .disc{box-shadow:0 0 0 4px #fff,0 0 20px rgba(255,255,255,.6)}
+.tp.dropt{background:var(--card2);outline:2px dashed var(--line2)}
+.tcard.dropt{outline:2px dashed var(--line2);outline-offset:-2px}
+.dropline{position:absolute;left:4%;right:4%;height:0;border-top:2px dashed rgba(255,255,255,.85);z-index:1;pointer-events:none;transform:translateY(-1px)}
+.dropline span{position:absolute;left:0;top:-20px;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;background:rgba(0,0,0,.65);padding:2px 7px;border-radius:6px;white-space:nowrap}
+.dropline.A{border-color:#93c5fd;color:#bfdbfe}.dropline.B{border-color:#fca5a5;color:#fecaca}
+@media (max-width:640px){.man-sum{grid-template-columns:1fr 1fr}.man-mid{display:none}}
 </style>
 </head>
 <body>
@@ -984,7 +1016,7 @@ function computeMetrics(cur){
 }
 function reoptimizeTeam(team){
   const ps=team.players.map(teamPlayer); const o=optimizeRoles(ps);
-  team.players.forEach((e,i)=>e.role=o.roles[i]); team.formation=o.formation;
+  team.players.forEach((e,i)=>{e.role=o.roles[i];delete e.slot;}); team.formation=o.formation;
 }
 
 /* ================== Demo verisi (yeni gruplar için) ================== */
@@ -1371,7 +1403,8 @@ function matchSideHTML(){
       </div>
       <div class="status ${st.cls}" style="margin-top:14px">${st.t}</div>
       <div style="display:grid;gap:8px;margin-top:14px">
-        <button class="btn primary" data-act="generate" ${ok?'':'disabled'}>${icon(I.zap)} Takımları Oluştur</button>
+        <button class="btn primary" data-act="generate" ${ok?'':'disabled'}>${icon(I.zap)} Takımları Yapay Zeka Oluştursun</button>
+        <button class="btn" data-act="man-open" ${n>=2?'':'disabled'}>${icon(I.users)} Takımları Elle Seç</button>
         <button class="btn" data-act="save-att" ${n?'':'disabled'}>${icon(I.save)} Katılımı Kaydet</button>
       </div>
     </div>
@@ -1475,7 +1508,7 @@ function tokenPositions(team,side,mode){
   const groups={GK:[],DEF:[],MID:[],FWD:[]}; team.players.forEach(e=>groups[e.role].push(e));
   const Y=mode==='single'?{GK:90,DEF:71,MID:49,FWD:25}:side==='bottom'?{GK:92.5,DEF:80,MID:67.5,FWD:57.5}:{GK:7.5,DEF:20,MID:32.5,FWD:42.5};
   const out=[];
-  ROLES.forEach(r=>{const arr=orderLine(groups[r]); const n=arr.length; const sp=Math.min(mode==='single'?28:25,78/Math.max(n,1));
+  ROLES.forEach(r=>{const g=groups[r]; const arr=g.some(e=>e.slot!=null)?g.slice().sort((a,b)=>(a.slot??99)-(b.slot??99)):orderLine(g); const n=arr.length; const sp=Math.min(mode==='single'?28:25,78/Math.max(n,1));
     arr.forEach((e,i)=>out.push({e,x:50+(i-(n-1)/2)*sp,y:Y[r]}));});
   return out;
 }
@@ -1570,7 +1603,7 @@ function vTeams(){
       <div class="pitch-col pitch-wrap">
         <div class="seg">${[['both','Maç Görünümü'],['A','A Takımı'],['B','B Takımı']].map(([v,l])=>`<button class="${UI.pitchView===v?'on':''}" data-act="pview" data-v="${v}">${l}</button>`).join('')}</div>
         ${pitchHTML(cur,UI.pitchView)}
-        <div class="pitch-legend"><span><i style="background:var(--blue)"></i>A Takımı · ${m.A.formation}</span><span class="mid">Oyuncuya dokunun → düzenle</span><span><i style="background:var(--red)"></i>B Takımı · ${m.B.formation}</span></div>
+        <div class="pitch-legend"><span><i style="background:var(--blue)"></i>A Takımı · ${m.A.formation}</span><span class="mid">Dokun → düzenle · Sürükle → yer/takas</span><span><i style="background:var(--red)"></i>B Takımı · ${m.B.formation}</span></div>
       </div>
       <div>${teamCardHTML(cur,'B')}</div>
     </div>`;
@@ -1642,6 +1675,135 @@ function saveTeams(){
   cloud(async()=>{await Cloud.upsert('matches',[mToRow(m)]);await Cloud.upsert('attendance',[attRow(d,ids)],'group_id,match_date');});
   render(); toast(i>=0?'Maç güncellendi':'Takımlar kaydedildi · Geçmiş maçlara eklendi','ok');
 }
+
+/* ================== Takımları elle seçme ================== */
+function manualOpen(){
+  const ids=S.draft.selected.filter(id=>getP(id));
+  if(ids.length<2){toast('Önce en az 2 oyuncu seçin','err');return;}
+  const prev=UI.man&&UI.man.date===S.draft.date?UI.man.pick:{};
+  UI.man={date:S.draft.date,pick:Object.fromEntries(ids.map(id=>[id,prev[id]||'']))};
+  openModal('Takımları Elle Seç',`<div id="man-sum"></div>
+    <div class="row" style="justify-content:space-between;gap:8px">
+      <p class="small muted" style="flex:1;min-width:200px">Her oyuncu için A veya B'ye dokunun. Mevkileri sistem en uygun şekilde dağıtır; sonra sahada sürükleyerek değiştirebilirsiniz.</p>
+      <div class="row" style="gap:6px"><button class="btn sm" data-act="man-fill">${icon(I.zap,14)} Kalanları dengeli dağıt</button><button class="btn sm ghost" data-act="man-clear">Temizle</button></div>
+    </div>
+    <div class="man-list" id="man-list"></div>`,
+    `<button class="btn ghost" data-act="close-modal">Vazgeç</button><button class="btn primary" data-act="man-done" id="man-done">${icon(I.check)} Takımları Kur</button>`,'wide');
+  manualRefresh();
+}
+function manualTeams(){ const P=UI.man.pick; const A=[],B=[],N=[]; Object.entries(P).forEach(([id,k])=>{const p=getP(id); if(!p) return; (k==='A'?A:k==='B'?B:N).push(p);}); return {A,B,N}; }
+function manualRefresh(){
+  if(!UI.man||!$('#man-list')) return;
+  const {A,B,N}=manualTeams(); const P=UI.man.pick;
+  const side=(arr,k)=>{const sum=arr.reduce((s,p)=>s+overallOf(p),0);const gk=arr.filter(p=>p.positions.includes('GK')).length;
+    return `<div class="man-side ${k}"><b>${k} Takımı</b><span>${arr.length} oyuncu</span><span>Ort. ${arr.length?fmt(sum/arr.length):'—'}</span><span>Kaleci ${gk}</span></div>`;};
+  const sa=A.reduce((s,p)=>s+overallOf(p),0)/(A.length||1), sb=B.reduce((s,p)=>s+overallOf(p),0)/(B.length||1);
+  const diff=A.length&&B.length?Math.abs(sa-sb):null;
+  $('#man-sum').innerHTML=`<div class="man-sum">${side(A,'A')}<div class="man-mid">${diff===null?'<small>Fark</small>—':`<small>Ort. fark</small>${fmt1(diff)}`}</div>${side(B,'B')}</div>
+    ${A.length!==B.length&&!N.length?`<div class="warn-banner" style="margin-top:10px">Takımlar eşit değil (${A.length} - ${B.length}).</div>`:''}`;
+  const list=Object.keys(P).map(getP).filter(Boolean).sort((a,b)=>overallOf(b)-overallOf(a));
+  $('#man-list').innerHTML=list.map(p=>{const a=ai(p);const k=P[p.id];
+    return `<div class="man-row ${k}"><div class="avatar sm">${esc(initials(p.name))}</div>
+      <div class="nm"><b>${esc(p.name)}</b><span class="small muted">${posChips(p)}</span></div>
+      <b class="ov" style="color:${scoreColor(a.overall)}">${a.overall}</b>
+      <div class="man-seg"><button class="${k==='A'?'on A':''}" data-act="man-set" data-id="${p.id}" data-k="A">A</button><button class="${k===''?'on':''}" data-act="man-set" data-id="${p.id}" data-k="">–</button><button class="${k==='B'?'on B':''}" data-act="man-set" data-id="${p.id}" data-k="B">B</button></div></div>`;}).join('');
+  const done=$('#man-done'); if(done){ done.disabled=N.length>0||!A.length||!B.length; done.innerHTML=N.length?`${N.length} oyuncu atanmadı`:`${icon(I.check)} Takımları Kur`; }
+}
+function manualFill(){
+  const P=UI.man.pick; const {A,B,N}=manualTeams(); if(!N.length){toast('Atanmamış oyuncu yok');return;}
+  const half=Math.ceil(Object.keys(P).length/2);
+  let sa=A.reduce((s,p)=>s+overallOf(p),0), sb=B.reduce((s,p)=>s+overallOf(p),0), na=A.length, nb=B.length;
+  let ga=A.some(p=>ai(p).best==='GK'), gb=B.some(p=>ai(p).best==='GK');
+  // önce kaleciler, sonra güçlüden zayıfa: toplamı düşük olan takıma
+  N.sort((a,b)=>(ai(b).best==='GK')-(ai(a).best==='GK')||overallOf(b)-overallOf(a)).forEach(p=>{
+    const isGK=ai(p).best==='GK'; let k;
+    if(na>=half) k='B'; else if(nb>=half) k='A';
+    else if(isGK&&ga!==gb) k=ga?'B':'A';
+    else k=(sa/(na||1)*na<=sb/(nb||1)*nb)?'A':'B';
+    P[p.id]=k; if(k==='A'){sa+=overallOf(p);na++;if(isGK)ga=true;}else{sb+=overallOf(p);nb++;if(isGK)gb=true;}
+  });
+  manualRefresh();
+}
+function manualDone(){
+  const {A,B,N}=manualTeams(); if(N.length||!A.length||!B.length) return;
+  const mk=ps=>{const o=optimizeRoles(ps);return {formation:o.formation,players:ps.map((p,i)=>({id:p.id,role:o.roles[i],pinned:false,snap:snap(p)}))};};
+  const cur=S.current&&S.current.date===S.draft.date&&!S.current.locked?S.current:null;
+  S.current={id:uid(),matchId:cur?cur.matchId:null,date:S.draft.date,playerIds:[...A,...B].map(p=>p.id),manual:true,
+    teamA:mk(A),teamB:mk(B),locked:false,saved:false,scoreA:cur?cur.scoreA??null:null,scoreB:cur?cur.scoreB??null:null,createdAt:new Date().toISOString()};
+  computeMetrics(S.current); saveAttendanceSilent(); UI.man=null; closeModal();
+  UI.animate=true; UI.swapFrom=null; persist(); go('takimlar');
+  toast(`Takımlar elle kuruldu · Denge %${Math.round(S.current.metrics.balance)}`,'ok');
+}
+
+/* ================== Sürükle-bırak: diziliş, takas, takım değiştirme ================== */
+const LINE_Y=(mode,side)=>mode==='single'?{GK:90,DEF:71,MID:49,FWD:25}:side==='bottom'?{GK:92.5,DEF:80,MID:67.5,FWD:57.5}:{GK:7.5,DEF:20,MID:32.5,FWD:42.5};
+function pitchTarget(pitch,x,y){
+  const r=pitch.getBoundingClientRect(); const px=(x-r.left)/r.width*100, py=(y-r.top)/r.height*100;
+  const both=UI.pitchView==='both'; const k=both?(py>52.5?'A':'B'):UI.pitchView;
+  const Y=LINE_Y(both?'both':'single',k==='A'||!both?'bottom':'top');
+  const role=ROLES.reduce((b,rl)=>Math.abs(Y[rl]-py)<Math.abs(Y[b]-py)?rl:b,'GK');
+  return {k,role,px:clamp(px,4,96),ly:Y[role]};
+}
+function dropToPitch(id,k,role,px){
+  const c=S.current, f=findInCurrent(id); if(!f) return;
+  const T=k==='A'?c.teamA:c.teamB, oldRole=f.e.role, moved=f.k!==k;
+  if(moved){ f.t.players.splice(f.i,1); f.e.pinned=false; T.players.push(f.e);
+    if(oldRole==='GK'){ const cand=f.t.players.slice().sort((a,b)=>roleScore(teamPlayer(b),'GK')-roleScore(teamPlayer(a),'GK'))[0]; if(cand&&!f.t.players.some(e=>e.role==='GK')){cand.role='GK';delete cand.slot;} } }
+  if(role==='GK'){ const gk=T.players.find(e=>e.role==='GK'&&e.id!==id); if(gk){ gk.role=moved?'DEF':oldRole; delete gk.slot; } }
+  else if(!moved&&oldRole==='GK'){ const cand=T.players.filter(e=>e.id!==id).sort((a,b)=>roleScore(teamPlayer(b),'GK')-roleScore(teamPlayer(a),'GK'))[0]; if(cand){cand.role='GK';delete cand.slot;} }
+  f.e.role=role;
+  // hat içi sıralama: bırakılan x konumuna göre yerleştir
+  const mode=UI.pitchView==='both'?'both':'single', side=k==='A'||mode==='single'?'bottom':'top';
+  const xs=Object.fromEntries(tokenPositions(T,side,mode).map(t=>[t.e.id,t.x])); xs[id]=px;
+  T.players.filter(e=>e.role===role).sort((a,b)=>xs[a.id]-xs[b.id]).forEach((e,i)=>e.slot=i);
+  const nm=shortName(teamPlayer(f.e).name);
+  afterChange(moved?`${nm} → ${k} Takımı · ${ROLE_TR[role]}`:oldRole===role?`${nm} yeri değişti`:`${nm} → ${ROLE_TR[role]}`);
+}
+let DND=null;
+function dndEnd(){ if(!DND) return; DND.ghost&&DND.ghost.remove(); DND.src.classList.remove('dragging'); document.body.classList.remove('dnd');
+  document.querySelectorAll('.dropt').forEach(x=>x.classList.remove('dropt')); document.querySelectorAll('.dropline').forEach(x=>x.remove()); DND=null; }
+function dndResolve(x,y){
+  const el=document.elementFromPoint(x,y); if(!el) return null;
+  const t=el.closest('.tok[data-id],.tp[data-id]'); if(t&&t.dataset.id!==DND.id&&!t.closest('#modal-root')) return {type:'swap',el:t,id:t.dataset.id};
+  const pitch=el.closest('.pitch-col .pitch'); if(pitch) return {type:'pitch',el:pitch,...pitchTarget(pitch,x,y)};
+  const card=el.closest('.tcard'); if(card) return {type:'card',el:card,k:card.classList.contains('A')?'A':'B'};
+  return null;
+}
+document.addEventListener('pointerdown',e=>{
+  if(UI.view!=='takimlar'||!S.current||e.button>0) return;
+  const src=e.target.closest('.pitch-col .tok[data-id], .tcard .tp[data-id]'); if(!src) return;
+  if(src.classList.contains('tp')&&e.pointerType!=='mouse') return; // dokunmatikte listeler kaydırılabilsin
+  DND={id:src.dataset.id,src,x0:e.clientX,y0:e.clientY,on:false};
+});
+document.addEventListener('pointermove',e=>{
+  if(!DND) return;
+  if(!DND.on){
+    if(Math.hypot(e.clientX-DND.x0,e.clientY-DND.y0)<7) return;
+    if(S.current.locked){ toast('Takımlar kilitli. Sürüklemek için kilidi açın.','err'); DND=null; return; }
+    DND.on=true; UI.swapFrom=null; document.body.classList.add('dnd'); DND.src.classList.add('dragging');
+    const f=findInCurrent(DND.id), p=teamPlayer(f.e);
+    const g=document.createElement('div'); g.className='dnd-ghost '+f.k; g.innerHTML=`<div class="disc">${fmt(roleScore(p,f.e.role))}</div><div class="lbl">${esc(shortName(p.name))}</div>`;
+    document.body.appendChild(g); DND.ghost=g;
+  }
+  e.preventDefault();
+  DND.ghost.style.left=e.clientX+'px'; DND.ghost.style.top=e.clientY+'px';
+  document.querySelectorAll('.dropt').forEach(x=>x.classList.remove('dropt'));
+  const t=dndResolve(e.clientX,e.clientY); DND.t=t;
+  let line=document.querySelector('.dropline');
+  if(t&&t.type==='pitch'){ if(!line){line=document.createElement('div');line.className='dropline';t.el.appendChild(line);} line.style.top=t.ly+'%'; line.className='dropline '+t.k; line.innerHTML=`<span>${t.k} · ${ROLE_TR[t.role]}</span>`; }
+  else { line&&line.remove(); if(t) t.el.classList.add('dropt'); }
+},{passive:false});
+document.addEventListener('pointerup',e=>{
+  if(!DND) return; const d=DND;
+  if(!d.on){ DND=null; return; }
+  const t=dndResolve(e.clientX,e.clientY); dndEnd();
+  UI.noClick=true; setTimeout(()=>UI.noClick=false,60);
+  if(!t) return;
+  if(t.type==='swap'){ UI.swapFrom=d.id; swapWith(t.id); }
+  else if(t.type==='pitch') dropToPitch(d.id,t.k,t.role,t.px);
+  else if(t.type==='card'){ const f=findInCurrent(d.id); if(f&&f.k!==t.k) movePlayer(d.id); }
+});
+document.addEventListener('pointercancel',()=>dndEnd());
 
 /* ================== Görünüm: Geçmiş ================== */
 function vHistory(){
@@ -1821,6 +1983,11 @@ const ACT = {
   'reroll':()=>generate(true),
   'lock':()=>{S.current.locked=!S.current.locked;UI.swapFrom=null;persist();render();toast(S.current.locked?'Takımlar kilitlendi':'Kilit açıldı','ok');},
   'save-teams':()=>saveTeams(),
+  'man-open':()=>manualOpen(),
+  'man-set':el=>{UI.man.pick[el.dataset.id]=el.dataset.k;manualRefresh();},
+  'man-fill':()=>manualFill(),
+  'man-clear':()=>{Object.keys(UI.man.pick).forEach(k=>UI.man.pick[k]='');manualRefresh();},
+  'man-done':()=>manualDone(),
   'copy-teams':()=>copyText(teamsText(S.current)),
   'pview':el=>{UI.pitchView=el.dataset.v;UI.animate=true;render();},
   'tp':el=>{const id=el.dataset.id;if(UI.swapFrom){if(UI.swapFrom===id){UI.swapFrom=null;render();return;}swapWith(id);}else playerSheet(id);},
@@ -1848,6 +2015,7 @@ const ACT = {
 };
 
 document.addEventListener('click',e=>{
+  if(UI.noClick){e.preventDefault();e.stopPropagation();return;}
   const el=e.target.closest('[data-act]'); if(!el) return;
   const fn=ACT[el.dataset.act]; if(fn){ if(el.tagName==='A') e.preventDefault(); fn(el,e); }
 });
