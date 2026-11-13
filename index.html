@@ -384,7 +384,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 .hero h1{font-family:var(--cond);font-size:56px;font-weight:800;text-transform:uppercase;line-height:1;margin:16px 0 12px;letter-spacing:.5px}
 .hero h1 em{font-style:normal;color:var(--green)}
 .hero p{color:var(--muted);max-width:620px;margin:0 auto;line-height:1.6}
-.welcome-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.welcome-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
 .welcome .card h3{display:flex;align-items:center;gap:8px}
 .glist{display:grid;gap:8px}
 .gitem{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:var(--bg2);border:1px solid var(--line);font:inherit;font-weight:600;color:var(--text);cursor:pointer;text-align:left}
@@ -612,6 +612,104 @@ body.dnd,body.dnd *{cursor:grabbing!important;user-select:none}
 .bchip.dropt{outline:2px solid #fff}.bchip.dragging{opacity:.3}
 @media (max-width:1100px){.fx-layout{grid-template-columns:1fr 1fr}.fx-layout .pitch-col{grid-row:span 2}.t-grid{grid-template-columns:1fr 1fr}}
 @media (max-width:760px){.modes{grid-template-columns:1fr}.mode-card{min-height:0}.home-head h1{font-size:34px}.fx-layout,.t-grid{grid-template-columns:1fr}.fx-layout .pitch-col{grid-row:auto}.mode-pill .mp-t{display:none}.mode-pill{padding:7px 9px}.mode-pill svg{display:none}.brand>div:last-child{display:none}}
+.gtag{display:inline-flex;align-items:center;font-size:10.5px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;color:#fcd34d;background:rgba(245,179,1,.12);border:1px solid rgba(245,179,1,.4);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:middle;white-space:nowrap}
+.gk-k{font-style:normal;font-size:9px;font-weight:900;background:#f5b301;color:#111;border-radius:4px;padding:0 4px;margin-left:2px}
+.guest-btn{border-color:rgba(245,179,1,.45)!important;color:#fcd34d}
+.glist-guest{margin-bottom:16px;padding:12px;border-radius:16px;border:1px dashed rgba(245,179,1,.45);background:rgba(245,179,1,.04)}
+.prow.guest .nm b{display:flex;align-items:center;flex-wrap:wrap}
+.gconv{margin-left:6px;padding:2px 8px!important;font-size:11.5px!important}
+.radio-card{display:flex;gap:10px;align-items:flex-start;padding:12px;border-radius:12px;border:1px solid var(--line2);background:var(--card2);cursor:pointer}
+.radio-card input{margin-top:3px;accent-color:var(--green);width:18px;height:18px;flex:none}
+.radio-card div{display:flex;flex-direction:column;gap:3px}
+.radio-card:has(input:checked){border-color:var(--green);background:rgba(61,220,132,.07)}
+/* tanıtım */
+.welcome .hero h1{font-size:46px;max-width:820px;margin-left:auto;margin-right:auto}
+.flow{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;margin-top:6px}
+.flow span{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:99px;background:var(--card);border:1px solid var(--line2);font-weight:700;font-size:13.5px}
+.flow span svg{color:var(--green)}.flow i{font-style:normal;color:var(--dim)}
+.wl-groups{margin-bottom:16px}
+.feats{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.feat{display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:18px;background:var(--card);border:1px solid var(--line)}
+.feat-t{display:flex;gap:12px;align-items:flex-start}
+.feat-i{font-size:26px;line-height:1;width:44px;height:44px;border-radius:12px;background:var(--card2);display:grid;place-items:center;flex:none}
+.feat h3{font-size:17px;margin-bottom:4px}.feat p{color:var(--muted);font-size:13.5px;line-height:1.55}
+.feat-prev{margin-top:auto;padding:12px;border-radius:14px;background:var(--bg2);border:1px solid var(--line);min-height:96px;display:flex;align-items:center;justify-content:center}
+.mp-rsvp{width:100%}.mp-big,.nm-big{font-family:var(--cond);font-size:22px;font-weight:800;color:var(--muted);white-space:nowrap}
+.mp-big b,.nm-big b{font-size:38px;color:var(--text);line-height:1}.mp-big small,.nm-big small{font-family:var(--font);font-size:12px;font-weight:700;margin-left:6px;text-transform:uppercase}
+.mp-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.mp-chips span{font-size:12px;padding:4px 9px;border-radius:99px;background:var(--card2);border:1px solid var(--line)}
+.mp-teams{display:flex;align-items:center;gap:16px}
+.mini-pitch{position:relative;width:86px;aspect-ratio:68/105;border-radius:10px;overflow:hidden;background:linear-gradient(#1f7a3e,#176732)}
+.mini-pitch svg{position:absolute;inset:0;width:100%;height:100%}
+.mini-pitch i{position:absolute;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:#2563eb;border:1.5px solid #fff;font-style:normal;font-size:7px;font-weight:800;color:#fff;display:grid;place-items:center}
+.mp-gauge{display:flex;flex-direction:column;align-items:center}.mp-gauge b{font-family:var(--cond);font-size:34px;color:var(--green)}.mp-gauge small{color:var(--muted);font-weight:700;text-transform:uppercase;font-size:11px}
+.mp-form{display:flex;gap:6px;align-items:center}.mp-form .fr{width:26px;height:26px;font-size:12px;border-radius:7px}.mp-form .fx-sc{margin-left:10px}
+.mp-table{width:100%;border-collapse:collapse;font-size:13px}.mp-table td{padding:5px 6px;border-bottom:1px solid var(--line)}.mp-table td:first-child{color:var(--green);font-weight:800;width:18px}.mp-table td:last-child{text-align:right;font-family:var(--cond);font-size:17px}
+.modes-cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px}.modes-cmp ul{margin:10px 0 0 18px;display:grid;gap:5px;font-size:14px}
+/* grup ana sayfası */
+.home-hi{display:flex;justify-content:space-between;align-items:flex-end;margin:6px 0 14px}
+.home-hi h1{font-family:var(--cond);font-size:38px;font-weight:800;text-transform:uppercase;line-height:1}
+.nm-card{padding:20px;border-radius:22px;border:1px solid var(--line2);display:flex;flex-direction:column;gap:10px;background:var(--card)}
+.nm-card.ic{background:radial-gradient(110% 120% at 0% 0%,rgba(61,220,132,.2),transparent 55%),var(--card);border-color:rgba(61,220,132,.35)}
+.nm-card.fx{background:radial-gradient(110% 120% at 0% 0%,rgba(59,130,246,.22),transparent 55%),var(--card);border-color:rgba(59,130,246,.4)}
+.nm-card h2{font-family:var(--cond);font-size:30px;font-weight:800;text-transform:uppercase;line-height:1.05}
+.nm-top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.nm-kind{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.nm-when{font-size:12.5px;font-weight:800;padding:4px 10px;border-radius:99px;background:var(--green);color:#06210f}
+.nm-card.fx .nm-when{background:#3b82f6;color:#fff}
+.nm-meta{color:var(--muted);font-size:14px}
+.nm-stat,.rs-status{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.nm-chips{display:flex;gap:6px;flex-wrap:wrap}
+.nm-chips span{font-size:12.5px;font-weight:700;padding:5px 10px;border-radius:99px;background:var(--card2);border:1px solid var(--line)}
+.nm-chips span.ok{border-color:rgba(61,220,132,.5);color:#86efac}.nm-chips span.warn{border-color:rgba(245,179,1,.5);color:#fcd34d}
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+.qa{font:inherit;color:var(--text);text-align:left;padding:14px;border-radius:16px;background:var(--card);border:1px solid var(--line);cursor:pointer;display:flex;flex-direction:column;gap:4px;min-height:96px;transition:transform .12s,border-color .12s}
+.qa:hover{transform:translateY(-2px);border-color:var(--line2)}
+.qa-i{font-size:22px}.qa b{font-size:14.5px}.qa small{color:var(--muted);font-size:12px}
+.modes.compact .mode-card{min-height:0;padding:16px;gap:10px}
+.modes.compact .mode-card h2{font-size:21px}.modes.compact .mode-card p{font-size:13px}
+.mc-row{display:flex;gap:12px;align-items:center}.mc-row .mc-ico{font-size:30px}
+/* katılım */
+.my-rs{padding:12px;border-radius:16px;background:var(--card2);border:1px solid var(--line2);display:grid;gap:10px}
+.rs{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:64px;justify-content:center}
+.rs span{font-size:20px}
+.my-line{line-height:1.45}
+.rs-squad{list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.rs-squad li,.rs-bench li{display:flex;gap:8px;align-items:center;font-size:13.5px;padding:7px 9px;border-radius:9px;background:rgba(61,220,132,.07);border:1px solid rgba(61,220,132,.2)}
+.rs-squad li.free{background:transparent;border:1px dashed var(--line2);color:var(--dim)}
+.rs-squad .n,.rs-bench .n{width:20px;color:var(--muted);font-size:11px;font-weight:800;flex:none}
+.rs-bench{list-style:none;display:grid;gap:5px}
+.rs-bench li{background:rgba(245,179,1,.07);border-color:rgba(245,179,1,.28)}.rs-bench small{margin-left:auto;color:#fcd34d;font-weight:700}
+.rs-squad li.me,.rs-bench li.me,.rs-sec li.me{font-weight:800;box-shadow:inset 0 0 0 2px var(--text)}
+.rs-more{display:grid;gap:8px}
+.rs-sec{border:1px solid var(--line);border-radius:12px;background:var(--card2)}
+.rs-sec summary{cursor:pointer;padding:11px 12px;font-weight:700;font-size:14px;list-style:none;display:flex;gap:6px;align-items:center}
+.rs-sec summary::-webkit-details-marker{display:none}.rs-sec summary b{margin-left:auto;color:var(--muted)}
+.rs-sec summary::after{content:'▾';color:var(--muted);margin-left:6px}.rs-sec[open] summary::after{content:'▴'}
+.rs-sec ul{list-style:none;padding:0 12px 12px;display:grid;gap:4px;font-size:13.5px}
+/* oylama */
+.vstep{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.vstep div{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:var(--card2);border:1px solid var(--line);color:var(--muted);font-size:13px;font-weight:700}
+.vstep i{font-style:normal;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--card3);font-size:12px;flex:none}
+.vstep .on{border-color:var(--green);color:var(--text)}.vstep .on i{background:var(--green);color:#06210f}
+.vstep .done i{background:rgba(61,220,132,.25);color:var(--green)}
+.vq{font-size:20px;font-family:var(--cond);text-transform:uppercase}
+.vprivacy{font-size:12.5px;color:var(--muted);padding:10px 12px;border-radius:12px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.3);line-height:1.5}
+.mvp-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mvp-h{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;padding-bottom:4px;border-bottom:2px solid var(--blue)}.mvp-h.B{border-color:var(--red)}
+.mvp-grid{display:grid;gap:6px}
+.mvp-tile{font:inherit;color:var(--text);text-align:left;min-height:46px;padding:10px 12px;border-radius:12px;background:var(--card2);border:1px solid var(--line);font-weight:700;font-size:14px;cursor:pointer}
+.mvp-tile.on{background:var(--amber);color:#111;border-color:var(--amber)}
+.vprog{display:grid;gap:6px}
+.vr2{padding:10px 0;border-bottom:1px solid var(--line);display:grid;gap:8px}
+.vr-h{display:flex;justify-content:space-between;align-items:center}.vr-h .nm{font-weight:700}
+.vr-val{font-family:var(--cond);font-size:24px;min-width:40px;height:36px;border-radius:10px;display:grid;place-items:center;background:var(--card2);color:var(--dim)}
+.vr-val.on{background:var(--green);color:#06210f}
+.r10b{display:grid;grid-template-columns:repeat(10,1fr);gap:5px}
+.r10b button{height:42px;border-radius:10px;background:var(--card2);border:1px solid var(--line);font-weight:800;font-size:15px;color:var(--muted)}
+.r10b button.on{background:var(--green);color:#06210f;border-color:var(--green)}
+.vsum{display:grid;gap:8px}.vsum>div{padding:12px;border-radius:12px;background:var(--card2);display:grid;gap:4px}.vsum span{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase}.vsum em{font-style:normal;color:var(--green);font-weight:800}
+.vdone{text-align:center;padding:10px 0}.vdone-i{font-size:44px}.vdone h3{font-family:var(--cond);font-size:26px;text-transform:uppercase;margin:6px 0}
+@media (max-width:760px){.feats,.modes-cmp{grid-template-columns:1fr}.welcome .hero h1{font-size:32px}.qa-grid{grid-template-columns:1fr 1fr}.home-hi h1{font-size:30px}.nm-card h2{font-size:24px}.r10b{grid-template-columns:repeat(5,1fr)}.r10b button{height:44px}.mvp-cols{grid-template-columns:1fr}.vstep span{font-size:11px}.rs-squad{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -787,7 +885,7 @@ function loadLocal(){
     return true;
   }catch(e){return false;}
 }
-const getP = id=>S.players.find(p=>p.id===id);
+const getP = id=>S.players.find(p=>p.id===id)||guestP(id);
 
 /* ================== Reyting motoru (FM tarzı) ==================
    • Her mevki için reyting = o mevkide önemli özelliklerin ağırlıklı ortalaması (kritik ×5, önemli ×3, yardımcı ×1).
@@ -1142,7 +1240,7 @@ function pickResult(ctx,prevKey){
   if(cand.length) return cand[Math.floor(Math.random()*cand.length)];
   return R.find(r=>splitKey(r,ctx.ps)!==prevKey)||R[0];
 }
-const SNAP_KEYS=['name',...PERSIST_KEYS];
+const SNAP_KEYS=['name',...PERSIST_KEYS,'guest','guestLevel'];
 const snap = p=>Object.fromEntries(SNAP_KEYS.map(k=>[k,p[k]]));
 function buildTeam(t,ps,pins){
   return {formation:t.formation,players:t.idxs.map((i,j)=>({id:ps[i].id,role:t.roles[j],pinned:pins.has(ps[i].id),snap:snap(ps[i])}))};
@@ -1238,32 +1336,6 @@ function render(){
 }
 
 /* ================== Görünüm: Karşılama / Gruplar ================== */
-function vWelcome(){
-  return `<div class="welcome">
-    <div class="hero">
-      <div class="hero-badge">${icon(I.spark,14)} Yapay zeka destekli takım dengeleme</div>
-      <h1>Halı sahada <em>dengeli</em> maçlar</h1>
-      <p>Oyuncularınızı ekleyin, yapay zeka her oyuncuya 99 üzerinden reyting versin; algoritma 1.716 kombinasyonu tarayıp en dengeli iki takımı kursun.</p>
-    </div>
-    <div class="welcome-grid">
-      <div class="card">
-        <h3>${icon(I.login,20)} Gruba Katıl</h3>
-        <p class="small muted" style="margin-bottom:12px">Arkadaşınızın paylaştığı davet kodunu girin.</p>
-        <div class="row" style="flex-wrap:nowrap"><input type="text" id="join-code" placeholder="AB12CD34" maxlength="12" autocomplete="off" spellcheck="false" style="text-transform:uppercase;letter-spacing:2px;font-weight:700"><button class="btn primary" data-act="join-do">Katıl</button></div>
-      </div>
-      <div class="card">
-        <h3>${icon(I.plus,20)} Yeni Grup Oluştur</h3>
-        <p class="small muted" style="margin-bottom:12px">Kendi halı saha grubunuzu kurun, davet linkiyle arkadaşlarınızı ekleyin.</p>
-        <input type="text" id="new-group" placeholder="Grup adı (örn. Cuma Akşamı)" maxlength="40" autocomplete="off" style="margin-bottom:10px">
-        <input type="password" id="new-pw" placeholder="Düzenleme şifresi (en az 4 karakter)" autocomplete="new-password" style="margin-bottom:6px">
-        <p class="small muted" style="margin-bottom:10px">Oyuncu ekleme/düzenleme yalnızca bu şifreyle yapılabilir. Şifreyi unutmayın.</p>
-        <label class="row small muted" style="gap:8px;margin-bottom:12px"><input type="checkbox" id="new-demo"> Demo oyuncularla başla</label>
-        <button class="btn primary" data-act="create-do" style="width:100%">${icon(I.plus)} Grubu Oluştur</button>
-      </div>
-    </div>
-    ${G.list.length?`<div class="card" style="margin-top:16px"><h3>Gruplarım</h3><div class="glist">${G.list.map(g=>`<button class="gitem" data-act="grp-switch" data-code="${g.code}">${icon(I.users,16)} ${esc(g.name)}</button>`).join('')}</div></div>`:''}
-  </div>`;
-}
 function groupModal(){
   const others=G.list.filter(g=>g.code!==G.code);
   openModal('Gruplar',`
@@ -1530,7 +1602,7 @@ function matchListHTML(){
   const q=UI.mSearch.trim().toLocaleLowerCase('tr');
   const arr=S.players.filter(p=>(!q||p.name.toLocaleLowerCase('tr').includes(q))&&(!UI.onlySel||S.draft.selected.includes(p.id))).sort((a,b)=>a.name.localeCompare(b.name,'tr'));
   if(!arr.length) return `<div class="empty"><h3>Oyuncu bulunamadı</h3><p>${S.players.length?'Aramayı değiştirin.':'Önce Oyuncular ekranından oyuncu ekleyin.'}</p></div>`;
-  return `<div class="plist">${arr.map(p=>{const on=S.draft.selected.includes(p.id);return `<div class="prow ${on?'sel':''}" data-act="toggle-sel" data-id="${p.id}">
+  return guestsListHTML()+`<div class="plist">${arr.map(p=>{const on=S.draft.selected.includes(p.id);return `<div class="prow ${on?'sel':''}" data-act="toggle-sel" data-id="${p.id}">
     <div class="cbx">${on?icon(I.check,14):''}</div>
     <div class="nm"><b>${esc(p.name)}</b><div>${posChips(p)}</div></div>
     <div class="sc">${overallOf(p)}</div></div>`;}).join('')}</div>`;
@@ -1553,7 +1625,7 @@ function matchSideHTML(){
         <button class="btn" data-act="save-att" ${n?'':'disabled'}>${icon(I.save)} Katılımı Kaydet</button>
       </div>
     </div>
-    ${sel.length?`<div class="card"><h3 style="font-size:16px">Seçilenler</h3><div class="sel-chips">${sel.sort((a,b)=>a.name.localeCompare(b.name,'tr')).map(p=>`<span>${esc(p.name)}</span>`).join('')}</div></div>`:''}`;
+    ${sel.length?`<div class="card"><h3 style="font-size:16px">Seçilenler</h3><div class="sel-chips">${sel.sort((a,b)=>a.name.localeCompare(b.name,'tr')).map(p=>`<span>${esc(p.name)}${p.guest?' · Konuk':''}</span>`).join('')}</div></div>`:''}`;
 }
 function vMatch(){
   const last=[...S.matches].sort((a,b)=>b.date.localeCompare(a.date))[0];
@@ -1563,6 +1635,7 @@ function vMatch(){
     <section>
       <div class="toolbar">
         <div class="search">${icon(I.search,17)}<input type="search" placeholder="Oyuncu ara…" value="${esc(UI.mSearch)}" data-inp="msearch"></div>
+        <button class="btn sm guest-btn" data-act="guest-add">${icon(I.plus,15)} Konuk Ekle</button>
         <button class="btn sm" data-act="sel-all">Tümünü Seç</button>
         <button class="btn sm" data-act="sel-none">Temizle</button>
         ${last?`<button class="btn sm" data-act="sel-last" title="${esc(fmtDate(last.date,{day:'numeric',month:'long'}))}">Son Maç Kadrosu</button>`:''}
@@ -1664,7 +1737,7 @@ function pitchHTML(cur,mode,interactive=true){
   else add(mode==='A'?cur.teamA:cur.teamB,mode,'bottom');
   return `<div class="pitch">${pitchSVG()}${toks.map((t,i)=>{const p=teamPlayer(t.e);const v=roleScore(p,t.e.role);const sub=POSM[subOf(p,t.e.role)].s;
     return `<div class="tok ${t.key} ${t.e.role==='GK'?'gk':''} ${UI.swapFrom===t.e.id?'swapsrc':''} ${UI.animate&&interactive?'pre':''}" style="left:${UI.animate&&interactive?50:t.x}%;top:${UI.animate&&interactive?50:t.y}%;transition-delay:${UI.animate?i*45:0}ms" data-x="${t.x}" data-y="${t.y}" ${interactive?`data-act="tp" data-id="${t.e.id}"`:''} title="${esc(p.name)} · ${POSM[subOf(p,t.e.role)].tr} ${fmt(v)}">
-      <div class="disc">${fmt(v)}<span class="rl">${sub}</span>${t.e.pinned?'<span class="pinm">📌</span>':''}</div><div class="lbl">${esc(shortName(p.name))}</div></div>`;}).join('')}</div>`;
+      <div class="disc">${fmt(v)}<span class="rl">${sub}</span>${t.e.pinned?'<span class="pinm">📌</span>':''}</div><div class="lbl">${esc(shortName(p.name))}${p.guest||isGuest(t.e.id)?' <em class="gk-k">K</em>':''}</div></div>`;}).join('')}</div>`;
 }
 function teamCardHTML(cur,key){
   const team=key==='A'?cur.teamA:cur.teamB, m=cur.metrics[key];
@@ -1685,7 +1758,7 @@ function teamCardHTML(cur,key){
     <div class="tlist">${list.map(e=>{const p=teamPlayer(e);const v=roleScore(p,e.role);const off=!inLine(p,e.role);const sub=POSM[subOf(p,e.role)];
       return `<div class="tp ${UI.swapFrom===e.id?'swapsrc':''}" data-act="tp" data-id="${e.id}">
         <span class="rb r-${e.role}">${sub.s}</span>
-        <div class="nm">${esc(p.name)}${off?'<small title="Alternatif mevki">alt. mevki</small>':''}</div>
+        <div class="nm">${esc(p.name)}${gTag(p)}${off?'<small title="Alternatif mevki">alt. mevki</small>':''}</div>
         ${e.pinned?`<span class="pin" title="Sabit">${icon(I.pin,14)}</span>`:''}
         <div class="rt" style="color:${scoreColor(v)}">${fmt(v)}</div></div>`;}).join('')}</div>
   </div>`;
@@ -1849,7 +1922,7 @@ function manualRefresh(){
   const list=Object.keys(P).map(getP).filter(Boolean).sort((a,b)=>overallOf(b)-overallOf(a));
   $('#man-list').innerHTML=list.map(p=>{const a=ai(p);const k=P[p.id];
     return `<div class="man-row ${k}"><div class="avatar sm">${esc(initials(p.name))}</div>
-      <div class="nm"><b>${esc(p.name)}</b><span class="small muted">${posChips(p)}</span></div>
+      <div class="nm"><b>${esc(p.name)} ${gTag(p)}</b><span class="small muted">${posChips(p)}</span></div>
       <b class="ov" style="color:${scoreColor(a.overall)}">${a.overall}</b>
       <div class="man-seg"><button class="${k==='A'?'on A':''}" data-act="man-set" data-id="${p.id}" data-k="A">A</button><button class="${k===''?'on':''}" data-act="man-set" data-id="${p.id}" data-k="">–</button><button class="${k==='B'?'on B':''}" data-act="man-set" data-id="${p.id}" data-k="B">B</button></div></div>`;}).join('');
   const done=$('#man-done'); if(done){ done.disabled=N.length>0||!A.length||!B.length; done.innerHTML=N.length?`${N.length} oyuncu atanmadı`:`${icon(I.check)} Takımları Kur`; }
@@ -1956,7 +2029,8 @@ function histBody(m){
   const P=e=>{ if(!e._h){ Object.defineProperty(e,'_h',{value:normPlayer(Object.assign({id:e.id},e.snap||{})),enumerable:false}); } return e._h; };
   const tl=(t,k)=>`<div class="hteam"><h4><span class="dot" style="width:10px;height:10px;border-radius:50%;background:${k==='A'?'var(--blue)':'var(--red)'}"></span>${k} Takımı <span class="chip">${m.metrics[k].formation}</span></h4>
     <div class="small muted" style="margin-bottom:8px">Güç ${fmt(m.metrics[k].total)} · Kondisyon ${fmt(m.metrics[k].stamina)} · Kaleci ${fmt(m.metrics[k].gk)}</div>
-    <ul>${t.players.slice().sort((a,b)=>o[a.role]-o[b.role]).map(e=>{const p=e.snap?P(e):teamPlayer(e);return `<li><span class="rb r-${e.role}">${POSM[subOf(p,e.role)].s}</span>${esc(p.name)}<span class="rt">${fmt(roleScore(p,e.role))}</span></li>`;}).join('')}</ul></div>`;
+    <ul>${t.players.slice().sort((a,b)=>o[a.role]-o[b.role]).map(e=>{const p=e.snap?P(e):teamPlayer(e);const gc=isGuest(e.id)?(e.convertedTo?`<span class="gtag">Konuk → ${esc(nameOf(e.convertedTo))}</span>`:`<span class="gtag">Konuk</span><button class="btn sm ghost gconv" data-act="gconv-open" data-mid="${m.id}" data-id="${e.id}" title="Kalıcı oyuncu yap">${icon(I.plus,13)} Oyuncu yap</button>`):'';
+      return `<li><span class="rb r-${e.role}">${POSM[subOf(p,e.role)].s}</span>${esc(p.name)}${gc}<span class="rt">${fmt(roleScore(p,e.role))}</span></li>`;}).join('')}</ul></div>`;
   const prev=UI.animate; UI.animate=false;
   const pv=pitchHTML({teamA:{players:m.teamA.players.map(e=>({...e}))},teamB:{players:m.teamB.players.map(e=>({...e}))}},'both',false); UI.animate=prev;
   const vs=voteSummary(m);
@@ -2002,7 +2076,7 @@ let PERFC=null;
 function perfMap(){
   if(PERFC) return PERFC; PERFC={};
   if(S.settings.voteImpact===false) return PERFC;
-  const per={}; scoredMatches().forEach(m=>{ const vs=voteSummary(m); Object.entries(vs.ratings).forEach(([id,o])=>(per[id]=per[id]||[]).push(o.avg)); });
+  const per={}; scoredMatches().forEach(m=>{ const vs=voteSummary(m); Object.entries(vs.ratings).forEach(([id,o])=>{ if(!isGuest(id)) (per[id]=per[id]||[]).push(o.avg); }); });
   Object.entries(per).forEach(([id,arr])=>{ const a=arr.slice(-8); const av=avg(a); const adj=clamp((av-6.5)*1.6,-6,6)*Math.min(1,a.length/3);
     PERFC[id]={avg:av,n:a.length,adj:Math.round(adj*10)/10}; });
   return PERFC;
@@ -2031,10 +2105,10 @@ function seasonStats(year){
   const pairs={};
   ms.forEach(m=>{ const vs=voteSummary(m);
     ['A','B'].forEach(k=>{ const t=k==='A'?m.teamA:m.teamB, r=resOf(m,k);
-      t.players.forEach(e=>{ const s=g(e.id); s.p++; s[{W:'w',D:'d',L:'l'}[r]]++; s.pts+={W:3,D:1,L:0}[r];
+      t.players.forEach(e=>{ if(isGuest(e.id)) return; const s=g(e.id); s.p++; s[{W:'w',D:'d',L:'l'}[r]]++; s.pts+={W:3,D:1,L:0}[r];
         s.goals+=statOf(m,'goals',e.id); s.assists+=statOf(m,'assists',e.id); if(vs.mvp===e.id) s.mvp++;
         const rr=vs.ratings[e.id]; if(rr){ s.rs+=rr.avg; s.rn++; } });
-      const ids=t.players.map(e=>e.id).sort();
+      const ids=t.players.map(e=>e.id).filter(id=>!isGuest(id)).sort();
       for(let i=0;i<ids.length;i++) for(let j=i+1;j<ids.length;j++){ const key=ids[i]+'|'+ids[j]; const o=pairs[key]||(pairs[key]={a:ids[i],b:ids[j],n:0,w:0,d:0,l:0}); o.n++; o[{W:'w',D:'d',L:'l'}[r]]++; }
     }); });
   const rows=Object.values(st).map(s=>Object.assign(s,{name:nameOf(s.id),rating:s.rn?s.rs/s.rn:null,wr:s.p?s.w/s.p:0}));
@@ -2151,25 +2225,6 @@ function saveScore(){
 function whoPicker(ids,act,extra=''){
   return `<div class="who"><p class="small muted" style="margin-bottom:8px">Sen kimsin? Bu cihaz seni hatırlar.</p><div class="who-list">${ids.map(id=>`<button class="chipbtn" data-act="${act}" data-id="${id}" ${extra}>${esc(nameOf(id))}</button>`).join('')}</div></div>`;
 }
-function voteModal(mid){
-  const m=S.matches.find(x=>x.id===mid); if(!m){ toast('Maç bulunamadı','err'); return; }
-  const ids=[...m.teamA.players,...m.teamB.players].map(e=>e.id);
-  let me=getMe(); if(me&&!ids.includes(me)) me=null;
-  if(UI.voteAs&&ids.includes(UI.voteAs)) me=UI.voteAs;
-  UI.vote={mid,me};
-  const vs=voteSummary(m); const mine=me?vs.votes.find(v=>v.voterId===me):null;
-  UI.vote.mvp=mine?mine.mvpId:null; UI.vote.ratings=Object.assign({},mine?mine.ratings:{});
-  const k=me?sideOf(m,me):null; const mates=me?(k==='A'?m.teamA:m.teamB).players.map(e=>e.id).filter(id=>id!==me):[];
-  const resTxt=scored(m)?`<span style="color:#93c5fd">A ${m.scoreA}</span> - <span style="color:#fca5a5">${m.scoreB} B</span>`:'Skor girilmedi';
-  const body=`<div class="vote-head"><b>${esc(fmtDate(m.date,{day:'numeric',month:'long',weekday:'long'}))}</b><span class="vscore">${resTxt}</span></div>
-    ${!me?whoPicker(ids,'vote-me'):`<div class="row" style="justify-content:space-between"><span class="small">Oy veren: <b>${esc(nameOf(me))}</b> <span class="muted">(${k} Takımı)</span></span><button class="btn sm ghost" data-act="vote-change">Değiştir</button></div>
-    <div class="sect">⭐ Maçın oyuncusu</div>
-    <div class="who-list" id="v-mvp">${ids.filter(id=>id!==me).map(id=>`<button class="chipbtn ${sideOf(m,id)} ${UI.vote.mvp===id?'on':''}" data-act="vote-mvp" data-id="${id}">${esc(shortName(nameOf(id)))}</button>`).join('')}</div>
-    <div class="sect">Takım arkadaşlarına puan ver (1–10)</div>
-    <div class="vrate">${mates.map(id=>`<div class="vr"><span class="nm">${esc(nameOf(id))}</span><div class="r10">${[...Array(10)].map((_,i)=>`<button class="${+UI.vote.ratings[id]===i+1?'on':''}" data-act="vote-r" data-id="${id}" data-v="${i+1}">${i+1}</button>`).join('')}</div></div>`).join('')}</div>`}
-    <div class="sect">Sonuçlar · ${vs.n} oy</div>${voteResultsHTML(m,vs)}`;
-  openModal('Maç Sonu Oylaması',body,`<button class="btn ghost" data-act="vote-share" data-id="${mid}">${icon(I.link,16)} Oy linkini paylaş</button>${me?`<button class="btn primary" data-act="vote-save">${icon(I.check)} ${mine?'Oyu Güncelle':'Oyu Gönder'}</button>`:''}`,'wide');
-}
 function voteResultsHTML(m,vs){
   if(!vs.n) return '<p class="small muted">Henüz oy yok. Linki WhatsApp grubunda paylaşın; herkes kendi telefonundan oy versin.</p>';
   const rows=Object.entries(vs.ratings).map(([id,o])=>({id,...o})).sort((a,b)=>b.avg-a.avg);
@@ -2177,17 +2232,6 @@ function voteResultsHTML(m,vs){
   return `${vs.mvp?`<div class="mvp-box">⭐ <b>${esc(nameOf(vs.mvp))}</b> <span class="small muted">· ${vs.cnt[vs.mvp]} oy</span>${mv.length>1?`<div class="small muted" style="margin-top:4px">${mv.slice(1,4).map(([id,c])=>`${esc(shortName(nameOf(id)))} ${c}`).join(' · ')}</div>`:''}</div>`:''}
     <div class="vres">${rows.map(r=>`<div><span class="nm ${sideOf(m,r.id)}">${esc(shortName(nameOf(r.id)))}</span><i style="width:${r.avg*10}%;background:${r.avg>=7.5?'var(--green)':r.avg>=6?'var(--amber)':'var(--red)'}"></i><b>${fmt1(r.avg)}</b><small>${r.n}</small></div>`).join('')}</div>
     <p class="small muted">Oy ortalamaları oyuncuların reytingine yansır (Ayarlar'dan kapatılabilir). Kimin kime ne verdiği gösterilmez.</p>`;
-}
-function voteSave(){
-  const V=UI.vote; if(!V||!V.me) return;
-  const ratings=Object.fromEntries(Object.entries(V.ratings).filter(([,v])=>+v>=1));
-  if(!V.mvp&&!Object.keys(ratings).length){ toast('Maçın oyuncusunu seçin ya da puan verin','err'); return; }
-  const now=new Date().toISOString();
-  const v={matchId:V.mid,voterId:V.me,mvpId:V.mvp||null,ratings,updatedAt:now};
-  const i=S.votes.findIndex(x=>x.matchId===v.matchId&&x.voterId===v.voterId); if(i>=0) S.votes[i]=Object.assign(S.votes[i],v); else S.votes.push(Object.assign({createdAt:now},v));
-  setMe(V.me); resetAI(); persist();
-  cloud(()=>Cloud.upsert('votes',[{group_id:G.id,match_id:v.matchId,voter_id:v.voterId,mvp_id:v.mvpId,ratings:v.ratings,updated_at:now}],'group_id,match_id,voter_id'));
-  toast('Oyun kaydedildi, teşekkürler!','ok'); voteModal(V.mid); render();
 }
 
 /* ---- Katılım bildirimi (geliyorum / gelemiyorum) ---- */
@@ -2201,38 +2245,9 @@ function rsvpLists(date){
 function applyRsvpToDraft(){
   if(S.draft.auto===false) return false;
   const L=rsvpLists(S.draft.date); if(!L.squad.length) return false;
-  const ids=L.squad.map(x=>x.id); if(ids.join()===S.draft.selected.join()) return false;
+  const gs=draftGuests().map(g=>g.id).filter(id=>S.draft.selected.includes(id));
+  const ids=L.squad.slice(0,Math.max(0,MATCH_SIZE-gs.length)).map(x=>x.id).concat(gs); if(ids.join()===S.draft.selected.join()) return false;
   S.draft.selected=ids; return true;
-}
-function rsvpCardHTML(){
-  const d=S.draft.date, L=rsvpLists(d), n=L.squad.length;
-  return `<div class="card rsvp-card">
-    <div class="row" style="justify-content:space-between"><h3 style="font-size:16px">📣 Katılım Listesi</h3><span class="chip">${n}/${MATCH_SIZE}${L.bench.length?` · ${L.bench.length} yedek`:''}</span></div>
-    <div class="rs-bar"><i class="yes" style="width:${n/MATCH_SIZE*100}%"></i></div>
-    <div class="small muted" style="margin:8px 0 12px">${L.total?`${n} geliyor · ${L.maybe.length} belki · ${L.no.length} gelemiyor · ${L.none.length} cevap vermedi`:'Linki gruba atın, herkes kendi telefonundan "Geliyorum / Gelemiyorum" desin. İlk 14 kişi kadroya, sonrakiler yedeğe yazılır.'}</div>
-    ${L.total&&S.draft.auto===false?`<div class="status warn" style="margin-bottom:10px">Seçimi elle değiştirdiniz; kadro artık listeden otomatik dolmuyor.</div>`:''}
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <button class="btn sm" data-act="rsvp-open">${icon(I.users,16)} Listeyi Aç</button>
-      <button class="btn sm primary" data-act="rsvp-share">${icon(I.link,16)} Linki Paylaş</button>
-      ${L.total&&S.draft.auto===false?`<button class="btn sm" style="grid-column:1/-1" data-act="rsvp-apply">${icon(I.refresh,16)} Kadroyu listeden doldur</button>`:''}
-    </div></div>`;
-}
-function rsvpModal(date){
-  date=date||S.draft.date; UI.rsvpDate=date;
-  const me=getMe(); const L=rsvpLists(date); const my=me&&(S.rsvp[date]||{})[me];
-  const li=(arr,cls)=>arr.map((x,i)=>`<li class="${cls}${x.id===me?' me':''}"><span class="n">${i+1}</span>${esc(nameOf(x.id))}</li>`).join('');
-  const body=`<div class="vote-head"><b>${esc(fmtDate(date,{day:'numeric',month:'long',weekday:'long'}))}</b><span class="chip">${L.squad.length}/${MATCH_SIZE}</span></div>
-    ${!me?whoPicker(S.players.slice().sort((a,b)=>a.name.localeCompare(b.name,'tr')).map(p=>p.id),'rsvp-me'):`<div class="row" style="justify-content:space-between"><span class="small">Sen: <b>${esc(nameOf(me))}</b>${my?` · <span class="muted">${RS_TR[my.s]}</span>`:''}</span><button class="btn sm ghost" data-act="rsvp-change">Değiştir</button></div>
-    <div class="rs-btns">${['yes','maybe','no'].map(s=>`<button class="rs ${s} ${my&&my.s===s?'on':''}" data-act="rsvp-set" data-s="${s}">${{yes:'✅',maybe:'🤔',no:'❌'}[s]} ${RS_TR[s]}</button>`).join('')}</div>
-    ${my&&my.s==='yes'&&L.bench.some(x=>x.id===me)?`<div class="status warn">Kadro dolu; yedek listesinde ${L.bench.findIndex(x=>x.id===me)+1}. sıradasın. Biri çıkarsa otomatik kadroya girersin.</div>`:''}`}
-    <div class="rs-lists">
-      <div><h4>Kadro <small>${L.squad.length}/${MATCH_SIZE}</small></h4><ol>${li(L.squad,'yes')||'<li class="muted">Henüz kimse yok</li>'}</ol></div>
-      ${L.bench.length?`<div><h4>Yedek <small>${L.bench.length}</small></h4><ol>${li(L.bench,'bench')}</ol></div>`:''}
-      ${L.maybe.length?`<div><h4>Belki <small>${L.maybe.length}</small></h4><ol>${li(L.maybe,'maybe')}</ol></div>`:''}
-      ${L.no.length?`<div><h4>Gelemiyor <small>${L.no.length}</small></h4><ol>${li(L.no,'no')}</ol></div>`:''}
-      ${L.none.length?`<div><h4>Cevap vermedi <small>${L.none.length}</small></h4><p class="small muted">${L.none.map(x=>esc(shortName(nameOf(x.id)))).join(', ')}</p></div>`:''}
-    </div>`;
-  openModal('Katılım',body,`<button class="btn ghost" data-act="close-modal">Kapat</button><button class="btn" data-act="rsvp-share">${icon(I.link,16)} Linki Paylaş</button>`,'wide');
 }
 function rsvpSet(s){
   const me=getMe(), date=UI.rsvpDate||S.draft.date; if(!me) return;
@@ -2302,32 +2317,6 @@ function teamPlayerStats(){
 const resBoxes=(arr,cls='')=>arr.map(r=>`<i class="fr ${r} ${cls}">${RES_TR[r]}</i>`).join('');
 
 /* ---- Ana sayfa: mod seçimi ---- */
-function vHome(){
-  const lastM=[...S.matches].sort((a,b)=>b.date.localeCompare(a.date))[0];
-  const L=rsvpLists(S.draft.date); const rec=teamRecord(fxPlayedList()); const tr=teamTrend();
-  const next=fxSorted().find(f=>!fxPlayed(f)&&f.date>=todayISO());
-  const lastF=fxPlayedList().slice(-1)[0];
-  return `<div class="home">
-    <div class="home-head"><div class="hero-badge">${icon(I.users,14)} ${esc(G.name)} · ${S.players.length} oyuncu</div><h1>Bugün ne yapıyoruz?</h1><p class="muted">İki mod aynı oyuncu havuzunu kullanır; bir oyuncuyu bir kez eklemeniz yeter.</p></div>
-    <div class="modes">
-      <button class="mode-card denge" data-act="mode-go" data-m="denge">
-        <div class="mc-ico">⚖️</div>
-        <h2>Takım Dengele</h2>
-        <p>Kendi aranızda maç: katılımı topla, yapay zekayla iki dengeli takım kur, skor ve sezon tablosunu tut.</p>
-        <div class="mc-stats"><span><b>${L.squad.length}/${MATCH_SIZE}</b> katılım</span><span><b>${S.matches.length}</b> iç maç</span>${lastM?`<span>Son: <b>${esc(fmtDate(lastM.date,{day:'numeric',month:'short'}))}</b></span>`:''}</div>
-        <span class="mc-go">Başla ${icon(I.move,16)}</span>
-      </button>
-      <button class="mode-card takim" data-act="mode-go" data-m="takim">
-        <div class="mc-ico">🛡️</div>
-        <h2>Takımının Maçını Kaydet</h2>
-        <p><b>${esc(clubName())}</b> olarak başka takımlarla oynadığınız maçlar: diziliş, skor, golcüler ve takım formu.</p>
-        <div class="mc-stats">${rec.p?`<span><b>${rec.w}G ${rec.d}B ${rec.l}M</b></span><span class="form">${resBoxes(fxPlayedList().slice(-5).map(fxRes))}${tr?`<b class="farr ${tr}">${icon(FORM_ICON[tr],13)}</b>`:''}</span>`:'<span>Henüz maç kaydı yok</span>'}
-          ${next?`<span>Sıradaki: <b>${esc(next.opponent)}</b> · ${esc(fmtDate(next.date,{day:'numeric',month:'short'}))}</span>`:lastF?`<span>Son: <b>${esc(lastF.opponent)} ${lastF.scoreFor}-${lastF.scoreAgainst}</b></span>`:''}</div>
-        <span class="mc-go">Takıma Git ${icon(I.move,16)}</span>
-      </button>
-    </div>
-  </div>`;
-}
 
 /* ---- Takım: Özet ---- */
 function vTOzet(){
@@ -2572,6 +2561,313 @@ document.addEventListener('pointerup',e=>{
   FXD={id:d.id}; const t=fxDrop(e.clientX,e.clientY); FXD=null; if(t) fxApplyDrop(d.id,t);
 });
 
+/* ================== Konuk oyuncular (yalnızca o maçlık) ================== */
+const isGuest=id=>String(id||'').startsWith('g_');
+const GCACHE=new Map();
+function guestToPlayer(g){
+  const L=clamp(Math.round(+g.level||55),1,99);
+  const attrs=Object.fromEntries(ATTR_KEYS.map(k=>[k,ATTRM[k][2]==='Kaleci'?(g.gk?L:20):L]));
+  const fam={}; (g.pos||[]).forEach(c=>{ if(POSM[c]) fam[c]='D'; }); if(g.gk) fam.GK='D'; if(!Object.keys(fam).length) fam.OS='D';
+  return Object.assign(normPlayer(Object.assign(attrs,{v:2,fam,id:g.id,name:g.name,foot:'Sağ',weakFoot:Math.max(30,L-15)})),{guest:true,guestLevel:L});
+}
+function guestP(id){
+  if(!isGuest(id)) return undefined;
+  const g=(S.draft.guests||[]).find(x=>x.id===id); if(!g) return undefined;
+  const key=JSON.stringify(g); const c=GCACHE.get(id); if(c&&c.key===key) return c.p;
+  const p=guestToPlayer(g); GCACHE.set(id,{key,p}); return p;
+}
+const draftGuests=()=>(S.draft.guests||[]).filter(g=>g.date===S.draft.date);
+const gTag=p=>p&&(p.guest||isGuest(p.id))?'<span class="gtag">Konuk</span>':'';
+const LEVELS=[[45,'Zayıf'],[55,'Orta'],[65,'İyi'],[75,'Çok iyi'],[85,'Yıldız']];
+function guestModal(id){
+  const g=id?(S.draft.guests||[]).find(x=>x.id===id):null;
+  const groupAvg=Math.round(avg(S.players.map(overallOf)))||60;
+  UI.guest={id:g?g.id:null,pos:g?[...(g.pos||[])]:['OS'],gk:g?!!g.gk:false};
+  openModal(g?'Konuğu Düzenle':'Konuk Oyuncu Ekle',`
+    <p class="small muted" style="line-height:1.55">Konuk yalnızca <b style="color:var(--text)">${esc(fmtDate(S.draft.date,{day:'numeric',month:'long'}))}</b> maçının katılımcısı olur. Oyuncu havuzuna, kalıcı reytinglere ve sezon tablosuna eklenmez.</p>
+    <div class="field"><label>Ad</label><input type="text" id="gs-name" value="${esc(g?g.name:'')}" placeholder="Örn. Ahmet'in arkadaşı Can" maxlength="40" autocomplete="off"></div>
+    <div class="field"><label>Oynayabildiği mevkiler</label><div class="who-list" id="gs-pos">${POS.filter(x=>x.c!=='GK').map(x=>`<button type="button" class="chipbtn ${UI.guest.pos.includes(x.c)?'sel':''}" data-act="gs-pos" data-c="${x.c}">${x.tr}</button>`).join('')}</div></div>
+    <div class="toggle"><div><b>Kaleci oynayabilir</b><div class="small muted">Takım kurarken kaleye geçebilir</div></div><button type="button" class="sw ${UI.guest.gk?'on':''}" data-act="gs-gk" aria-label="Kaleci oynayabilir"></button></div>
+    <div class="field"><label>Yaklaşık güç (1–99)</label>
+      <div class="row" style="gap:10px;flex-wrap:nowrap"><input type="number" id="gs-level" min="1" max="99" value="${g?g.level:groupAvg}" inputmode="numeric" style="width:100px;text-align:center;font-weight:800;font-size:18px"><span class="small muted">Gruptaki ortalama: <b style="color:var(--text)">${groupAvg}</b></span></div>
+      <div class="who-list" style="margin-top:8px">${LEVELS.map(([v,l])=>`<button type="button" class="chipbtn" data-act="gs-lv" data-v="${v}">${l} · ${v}</button>`).join('')}</div></div>`,
+    `${g?`<button class="btn danger" data-act="guest-del" data-id="${g.id}">${icon(I.trash,16)} Çıkar</button>`:''}<button class="btn ghost" data-act="close-modal">Vazgeç</button><button class="btn primary" data-act="guest-save">${icon(I.check)} ${g?'Kaydet':'Ekle ve Seç'}</button>`,'sm');
+  setTimeout(()=>{const i=$('#gs-name'); if(i&&!g) i.focus();},50);
+}
+function guestSave(){
+  const name=$('#gs-name').value.trim(); if(name.length<2){ toast('Konuğun adını yazın','err'); return; }
+  const level=clamp(Math.round(+$('#gs-level').value||0),1,99);
+  if(!UI.guest.pos.length&&!UI.guest.gk){ toast('En az bir mevki seçin','err'); return; }
+  S.draft.guests=S.draft.guests||[];
+  if(UI.guest.id){ const g=S.draft.guests.find(x=>x.id===UI.guest.id); Object.assign(g,{name,level,pos:UI.guest.pos,gk:UI.guest.gk}); }
+  else { const g={id:'g_'+uid(),name,level,pos:UI.guest.pos,gk:UI.guest.gk,date:S.draft.date}; S.draft.guests.push(g); if(!S.draft.selected.includes(g.id)) S.draft.selected.push(g.id); }
+  applyRsvpToDraft(); if(S.current) computeMetrics(S.current);
+  persist(); closeModal(); if(UI.view==='mac') refreshMatch(); else render();
+  toast(UI.guest.id?'Konuk güncellendi':`${name} konuk olarak eklendi`,'ok');
+}
+function guestDel(id){
+  S.draft.guests=(S.draft.guests||[]).filter(g=>g.id!==id); S.draft.selected=S.draft.selected.filter(x=>x!==id); applyRsvpToDraft();
+  persist(); closeModal(); refreshMatch(); toast('Konuk çıkarıldı','ok');
+}
+function guestsListHTML(){
+  const gs=draftGuests(); if(!gs.length) return '';
+  return `<div class="glist-guest"><div class="sect" style="margin-bottom:8px">Konuklar · bu maç için</div><div class="plist">${gs.map(g=>{const p=getP(g.id);const on=S.draft.selected.includes(g.id);
+    return `<div class="prow guest ${on?'sel':''}" data-act="toggle-sel" data-id="${g.id}"><div class="cbx">${on?icon(I.check,14):''}</div>
+      <div class="nm"><b>${esc(g.name)} <span class="gtag">Konuk</span></b><div>${posChips(p)}</div></div>
+      <button class="btn icon sm ghost" data-act="guest-edit" data-id="${g.id}" title="Düzenle">${icon(I.edit,15)}</button><div class="sc">${overallOf(p)}</div></div>`;}).join('')}</div></div>`;
+}
+/* Maçtan sonra konuğu kalıcı oyuncuya dönüştürme */
+function guestConvertModal(mid,gid){
+  const m=S.matches.find(x=>x.id===mid); if(!m) return; const e=[...m.teamA.players,...m.teamB.players].find(x=>x.id===gid); if(!e) return;
+  const g=e.snap||{}; const goals=statOf(m,'goals',gid), ast=statOf(m,'assists',gid);
+  UI.gconv={mid,gid};
+  openModal('Konuğu Kalıcı Oyuncu Yap',`
+    <p class="small" style="line-height:1.55"><b>${esc(g.name)}</b> oyuncu havuzuna eklenecek. Başlangıç gücü ${g.guestLevel||'—'}; özelliklerini sonra Oyuncular ekranından düzenleyebilirsiniz.</p>
+    <div class="field"><label>Oyuncu adı</label><input type="text" id="gc-name" value="${esc(g.name||'')}" maxlength="40"></div>
+    <div class="sect">Bu maçtaki kayıtlar</div>
+    <label class="radio-card"><input type="radio" name="gc-link" value="1" checked><div><b>Yeni oyuncuya bağla</b><span class="small muted">Bu maçın sonucu${goals?`, ${goals} gol`:''}${ast?`, ${ast} asist`:''} yeni oyuncunun istatistiğine ve sezon tablosuna geçer. Kayıt taşınır, kopyalanmaz.</span></div></label>
+    <label class="radio-card"><input type="radio" name="gc-link" value="0"><div><b>Bağlama</b><span class="small muted">Yalnızca oyuncu oluşturulur. Bu maç konuk kaydı olarak kalır ve sezon tablosuna sayılmaz.</span></div></label>
+    <p class="small muted">Her konuk yalnızca bir kez dönüştürülebilir; böylece kayıtlar iki kez sayılmaz.</p>`,
+    `<button class="btn ghost" data-act="close-modal">Vazgeç</button><button class="btn primary" data-act="gconv-do">${icon(I.check)} Dönüştür</button>`,'sm');
+}
+function guestConvertDo(){
+  const {mid,gid}=UI.gconv||{}; const m=S.matches.find(x=>x.id===mid); if(!m) return;
+  const e=[...m.teamA.players,...m.teamB.players].find(x=>x.id===gid); if(!e||e.convertedTo){ toast('Bu konuk zaten dönüştürülmüş','err'); closeModal(); return; }
+  const name=$('#gc-name').value.trim(); if(name.length<2){ toast('Ad girin','err'); return; }
+  if(S.players.some(p=>p.name.toLocaleLowerCase('tr')===name.toLocaleLowerCase('tr'))){ toast('Bu isimde bir oyuncu zaten var; farklı bir ad yazın','err'); return; }
+  const link=(document.querySelector('input[name=gc-link]:checked')||{}).value==='1';
+  const base=guestToPlayer({id:gid,name,level:(e.snap||{}).guestLevel||55,pos:Object.keys((e.snap||{}).fam||{}).filter(c=>c!=='GK'),gk:!!((e.snap||{}).fam||{}).GK});
+  const nid=uid(); const p=normPlayer(Object.assign({},base,{id:nid,name,active:true,createdAt:new Date().toISOString()}));
+  delete p.guest; delete p.guestLevel;
+  S.players.push(p);
+  if(link){
+    const swap=o=>{ if(o&&Object.prototype.hasOwnProperty.call(o,gid)){ o[nid]=o[gid]; delete o[gid]; } };
+    [m.teamA,m.teamB].forEach(t=>t.players.forEach(x=>{ if(x.id===gid){ x.id=nid; x.snap=snap(p); } }));
+    m.playerIds=m.playerIds.map(x=>x===gid?nid:x);
+    if(m.stats){ swap(m.stats.goals); swap(m.stats.assists); }
+    if(S.attendance[m.date]) S.attendance[m.date]=S.attendance[m.date].map(x=>x===gid?nid:x);
+    if(S.current&&S.current.matchId===m.id){ [S.current.teamA,S.current.teamB].forEach(t=>t.players.forEach(x=>{ if(x.id===gid) x.id=nid; })); S.current.playerIds=S.current.playerIds.map(x=>x===gid?nid:x); }
+    S.draft.selected=S.draft.selected.map(x=>x===gid?nid:x);
+  } else { e.convertedTo=nid; }
+  S.draft.guests=(S.draft.guests||[]).filter(g=>g.id!==gid);
+  resetAI(); persist();
+  cloud(async()=>{ await Cloud.upsert('players',[pToRow(p)]); await Cloud.upsert('matches',[mToRow(m)]); if(link&&S.attendance[m.date]) await Cloud.upsert('attendance',[attRow(m.date,S.attendance[m.date])],'group_id,match_date'); });
+  closeModal(); render(); toast(`${name} kalıcı oyuncu oldu${link?' · maç kayıtları bağlandı':''}`,'ok');
+}
+
+/* ================== Tanıtım (gruba katılmadan önce) ================== */
+function vWelcome(){
+  const miniPitch=`<div class="mini-pitch">${pitchSVG()}${[[50,90,'A'],[30,72,'A'],[70,72,'A'],[22,55,'A'],[50,58,'A'],[78,55,'A'],[50,30,'A']].map(([x,y],i)=>`<i style="left:${x}%;top:${y}%">${[71,68,74,66,79,70,77][i]}</i>`).join('')}</div>`;
+  const feat=(ico,t,d,prev)=>`<div class="feat"><div class="feat-t"><span class="feat-i">${ico}</span><div><h3>${t}</h3><p>${d}</p></div></div><div class="feat-prev" aria-hidden="true">${prev}</div></div>`;
+  return `<div class="welcome">
+    <div class="hero">
+      <div class="hero-badge">${icon(I.spark,14)} Halı saha grupları için ücretsiz</div>
+      <h1>Halı saha maçını <em>organize et</em>, takımları dengele, sezonu takip et.</h1>
+      <div class="flow"><span>${icon(I.users,16)} Katılımı topla</span><i>→</i><span>${icon(I.zap,16)} Dengeli takımları kur</span><i>→</i><span>${icon(I.score,16)} Skoru ve performansı kaydet</span></div>
+    </div>
+    ${G.list.length?`<div class="card wl-groups"><h3>Gruplarım</h3><div class="glist">${G.list.map(g=>`<button class="gitem" data-act="grp-switch" data-code="${g.code}">${icon(I.users,16)} ${esc(g.name)}</button>`).join('')}</div></div>`:''}
+    <div class="welcome-grid">
+      <div class="card">
+        <h3>${icon(I.login,20)} Gruba Katıl</h3>
+        <p class="small muted" style="margin-bottom:12px">Arkadaşınızın paylaştığı davet kodunu girin ya da davet linkine dokunun.</p>
+        <div class="row" style="flex-wrap:nowrap"><input type="text" id="join-code" placeholder="AB12CD34" maxlength="12" autocomplete="off" spellcheck="false" style="text-transform:uppercase;letter-spacing:2px;font-weight:700"><button class="btn primary" data-act="join-do">Katıl</button></div>
+      </div>
+      <div class="card">
+        <h3>${icon(I.plus,20)} Yeni Grup Oluştur</h3>
+        <p class="small muted" style="margin-bottom:12px">Kendi halı saha grubunuzu kurun, davet linkiyle arkadaşlarınızı ekleyin.</p>
+        <input type="text" id="new-group" placeholder="Grup adı (örn. Cuma Akşamı)" maxlength="40" autocomplete="off" style="margin-bottom:10px">
+        <input type="password" id="new-pw" placeholder="Düzenleme şifresi (en az 4 karakter)" autocomplete="new-password" style="margin-bottom:6px">
+        <p class="small muted" style="margin-bottom:10px">Oyuncu ekleme/düzenleme yalnızca bu şifreyle yapılabilir. Şifreyi unutmayın.</p>
+        <label class="row small muted" style="gap:8px;margin-bottom:12px"><input type="checkbox" id="new-demo"> Demo oyuncularla başla</label>
+        <button class="btn primary" data-act="create-do" style="width:100%">${icon(I.plus)} Grubu Oluştur</button>
+      </div>
+    </div>
+    <div class="sect" style="margin:34px 0 14px">Neler yapabilirsiniz</div>
+    <div class="feats">
+      ${feat('📣','Katılım ve yedek listesi','Linki gruba atın; herkes kendi telefonundan “Geliyorum / Belki / Gelemiyorum” desin. İlk 14 kişi kadroya, sonrakiler sırayla yedeğe yazılır.',
+        `<div class="mp-rsvp"><div class="mp-big"><b>12</b>/14 <small>kadro</small></div><div class="rs-bar"><i style="width:86%"></i></div><div class="mp-chips"><span>⏳ 2 yedek</span><span>❔ 3 yanıt bekleniyor</span></div></div>`)}
+      ${feat('⚖️','Dengeli takımlar','Her oyuncunun 99 üzerinden reytingi ve mevkisi hesaba katılır; uygulama tüm kombinasyonları deneyip en dengeli iki takımı ve dizilişi önerir. Sürükleyerek değiştirebilirsiniz.',
+        `<div class="mp-teams">${miniPitch}<div class="mp-gauge"><b>%92</b><small>denge</small></div></div>`)}
+      ${feat('🛡️','Rakip maçlarınız','Grubunuz bir takım olarak başka takımlarla oynadığında maçı kaydedin: kadro, diziliş, skor, golcüler ve takım formu.',
+        `<div class="mp-form">${['W','W','D','L','W'].map(r=>`<i class="fr ${r}">${RES_TR[r]}</i>`).join('')}<span class="fx-sc W">4 - 2</span></div>`)}
+      ${feat('🏆','Sezon istatistikleri','Puan tablosu, gol ve asist krallığı, maçın oyuncusu oylaması, form durumu ve kim kiminle daha çok kazanıyor.',
+        `<table class="mp-table"><tr><td>1</td><td>Oyuncu A</td><td>⚽ 9</td><td><b>21</b></td></tr><tr><td>2</td><td>Oyuncu B</td><td>⚽ 6</td><td><b>18</b></td></tr><tr><td>3</td><td>Oyuncu C</td><td>⚽ 4</td><td><b>15</b></td></tr></table>`)}
+    </div>
+    <p class="small muted" style="text-align:center;margin-top:8px">Önizlemelerdeki değerler örnektir.</p>
+    <div class="sect" style="margin:30px 0 14px">İki mod, tek oyuncu havuzu</div>
+    <div class="modes-cmp">
+      <div class="card"><h3>⚖️ Takım Dengele</h3><p class="small muted">Grup kendi arasında oynar.</p><ul><li>Katılım listesi ve yedekler</li><li>14 kişiden iki dengeli takım</li><li>Skor, gol, asist ve maç sonu oylaması</li><li>Sezon puan tablosu</li></ul></div>
+      <div class="card"><h3>🛡️ Takımının Maçını Kaydet</h3><p class="small muted">Grup, başka bir takıma karşı oynar.</p><ul><li>Rakip, tarih, saha bilgisi</li><li>Maç kadrosu ve diziliş</li><li>Skor, golcüler, maçın oyuncusu</li><li>Takım formu ve rakiplere karşı karne</li></ul></div>
+    </div>
+  </div>`;
+}
+
+/* ================== Grup ana sayfası (maç odaklı) ================== */
+function nextMatchInfo(){
+  const today=todayISO();
+  const dates=new Set(Object.keys(S.rsvp).filter(d=>d>=today&&Object.keys(S.rsvp[d]||{}).length));
+  if(S.draft.date>=today&&(S.draft.selected.length||dates.has(S.draft.date))) dates.add(S.draft.date);
+  const ic=[...dates].sort()[0];
+  const fx=fxSorted().find(f=>!fxPlayed(f)&&f.date>=today);
+  if(ic&&(!fx||ic<=fx.date)) return {kind:'ic',date:ic};
+  if(fx) return {kind:'fx',date:fx.date,f:fx};
+  return null;
+}
+function daysTo(d){ const n=Math.round((new Date(d+'T12:00:00')-new Date(todayISO()+'T12:00:00'))/864e5); return n<=0?'Bugün':n===1?'Yarın':`${n} gün sonra`; }
+function vHome(){
+  const nm=nextMatchInfo();
+  let hero;
+  if(nm&&nm.kind==='ic'){
+    const L=rsvpLists(nm.date); const n=nm.date===S.draft.date&&S.draft.selected.length?S.draft.selected.length:L.squad.length; const gN=nm.date===S.draft.date?S.draft.selected.filter(isGuest).length:0;
+    const full=n>=MATCH_SIZE; const teams=S.current&&S.current.date===nm.date;
+    hero=`<div class="nm-card ic">
+      <div class="nm-top"><span class="nm-kind">⚖️ İç maç · ${TEAM_SIZE}'ye ${TEAM_SIZE}</span><span class="nm-when">${daysTo(nm.date)}</span></div>
+      <h2>${esc(fmtDate(nm.date,{weekday:'long',day:'numeric',month:'long'}))}</h2>
+      <div class="nm-stat"><div class="nm-big"><b>${n}</b>/${MATCH_SIZE}<small>kadro</small></div>
+        <div class="nm-chips"><span class="${n===MATCH_SIZE?'ok':'warn'}">${n===MATCH_SIZE?'✅ Kadro tamam':n>MATCH_SIZE?`⚠️ ${n-MATCH_SIZE} kişi fazla`:`➕ ${MATCH_SIZE-n} kişi eksik`}</span>${gN?`<span>🎟️ ${gN} konuk</span>`:''}${L.bench.length?`<span>⏳ ${L.bench.length} yedek</span>`:''}${L.maybe.length?`<span>🤔 ${L.maybe.length} belki</span>`:''}${L.total?`<span>❔ ${L.none.length} yanıt bekleniyor</span>`:''}${teams?`<span class="ok">⚖️ Takımlar hazır · %${Math.round(S.current.metrics.balance)}</span>`:''}</div></div>
+      <div class="rs-bar"><i style="width:${Math.min(100,n/MATCH_SIZE*100)}%"></i></div>
+      ${!L.total?`<p class="small muted">Henüz kimse katılım bildirmedi. Linki paylaşın, kadro kendiliğinden dolsun.</p>`:''}
+      <div class="row" style="gap:8px;margin-top:4px"><button class="btn sm" data-act="home-rsvp" data-d="${nm.date}">${icon(I.users,15)} Listeyi Aç</button><button class="btn sm primary" data-act="home-go-mac" data-d="${nm.date}">${icon(I.zap,15)} ${teams?'Takımları Gör':'Takımları Kur'}</button></div>
+    </div>`;
+  } else if(nm&&nm.kind==='fx'){
+    const f=nm.f, k=fxIds(f).length, size=(f.lineup||{}).size||7;
+    hero=`<div class="nm-card fx">
+      <div class="nm-top"><span class="nm-kind">🛡️ Rakip maçı · ${esc(f.comp||'Dostluk')}</span><span class="nm-when">${daysTo(f.date)}</span></div>
+      <h2>${esc(clubName())} <span class="muted">vs</span> ${esc(f.opponent)}</h2>
+      <p class="nm-meta">${esc(fmtDate(f.date,{weekday:'long',day:'numeric',month:'long'}))}${f.time?' · '+esc(f.time):''}${f.venue?' · 📍 '+esc(f.venue):''}</p>
+      <div class="nm-stat"><div class="nm-big"><b>${k}</b><small>kişilik kadro</small></div>
+        <div class="nm-chips"><span class="${k>=size?'ok':'warn'}">${k>=size?`✅ ${size} kişi tamam`:`➕ Sahaya ${size-k} kişi daha lazım`}</span>${(f.lineup||{}).formation?`<span>📋 ${esc(f.lineup.formation)}</span>`:''}</div></div>
+      <div class="row" style="gap:8px;margin-top:4px"><button class="btn sm primary" data-act="fx-open" data-id="${f.id}">${icon(I.edit,15)} Kadro ve Diziliş</button></div>
+    </div>`;
+  } else {
+    hero=`<div class="nm-card empty">
+      <div class="nm-top"><span class="nm-kind">📅 Sıradaki maç</span></div>
+      <h2>Planlanmış maç yok</h2>
+      <p class="small muted">Bir tarih seçip katılım linkini paylaşın ya da rakip maçınızı ekleyin.</p>
+      <div class="row" style="gap:8px;margin-top:10px"><button class="btn primary" data-act="home-new-ic">${icon(I.plus)} Maç Oluştur</button><button class="btn" data-act="fx-new">${icon(I.plus)} Rakip Maçı Ekle</button></div>
+    </div>`;
+  }
+  const shareDate=nm&&nm.kind==='ic'?nm.date:S.draft.date;
+  const tile=(act,ico,t,s,extra='')=>`<button class="qa" data-act="${act}" ${extra}><span class="qa-i">${ico}</span><b>${t}</b><small>${s}</small></button>`;
+  const rec=teamRecord(fxPlayedList()); const lastM=[...S.matches].sort((a,b)=>b.date.localeCompare(a.date))[0];
+  return `<div class="home">
+    <div class="home-hi"><div><h1>${esc(G.name)}</h1><p class="muted">${S.players.length} oyuncu · ${S.matches.length} iç maç · ${S.fixtures.length} rakip maçı</p></div></div>
+    ${hero}
+    <div class="qa-grid">
+      ${tile('home-share','📣','Katılımı paylaş',esc(fmtDate(shareDate,{day:'numeric',month:'short'}))+' için link',`data-d="${shareDate}"`)}
+      ${tile('mode-go','⚖️','Takım dengele','Kadroyu iki takıma böl','data-m="denge"')}
+      ${tile('home-fx','🛡️','Rakip maçı kaydet','Skor, kadro, diziliş')}
+      ${tile('goto','📋','Taktik tahtası','Diziliş ve çizim','data-v="taktik"')}
+    </div>
+    <div class="modes compact">
+      <button class="mode-card denge" data-act="mode-go" data-m="denge"><div class="mc-row"><span class="mc-ico">⚖️</span><div><h2>Takım Dengele</h2><p>Grup içi maçlar, sezon tablosu, oylama</p></div></div>
+        <div class="mc-stats"><span><b>${S.matches.length}</b> iç maç</span>${lastM?`<span>Son: <b>${esc(fmtDate(lastM.date,{day:'numeric',month:'short'}))}</b></span>`:''}</div></button>
+      <button class="mode-card takim" data-act="mode-go" data-m="takim"><div class="mc-row"><span class="mc-ico">🛡️</span><div><h2>Takımının Maçları</h2><p>${esc(clubName())} · rakiplere karşı</p></div></div>
+        <div class="mc-stats">${rec.p?`<span><b>${rec.w}G ${rec.d}B ${rec.l}M</b></span><span class="form">${resBoxes(fxPlayedList().slice(-5).map(fxRes))}</span>`:'<span>Henüz maç yok</span>'}</div></button>
+    </div>
+  </div>`;
+}
+
+/* ================== Katılım listesi (yeniden tasarım) ================== */
+const RS_ICON={yes:'✅',maybe:'🤔',no:'❌'};
+function rsvpStatusHTML(L){
+  const n=L.squad.length, free=MATCH_SIZE-n;
+  return `<div class="rs-status"><div class="nm-big"><b>${n}</b>/${MATCH_SIZE}<small>kadro</small></div>
+    <div class="nm-chips"><span class="${free<=0?'ok':'warn'}">${free<=0?'✅ Kadro tamam':`➕ ${free} kişilik yer var`}</span>${L.bench.length?`<span>⏳ ${L.bench.length} yedek</span>`:''}${L.maybe.length?`<span>🤔 ${L.maybe.length} belki</span>`:''}${L.no.length?`<span>❌ ${L.no.length} gelemiyor</span>`:''}${L.none.length?`<span>❔ ${L.none.length} yanıt bekleniyor</span>`:''}</div></div>
+    <div class="rs-bar"><i style="width:${Math.min(100,n/MATCH_SIZE*100)}%"></i></div>`;
+}
+function rsvpCardHTML(){
+  const d=S.draft.date, L=rsvpLists(d);
+  return `<div class="card rsvp-card">
+    <div class="row" style="justify-content:space-between"><h3 style="font-size:16px">📣 Katılım Listesi</h3><span class="small muted">${esc(fmtDate(d,{day:'numeric',month:'short'}))}</span></div>
+    ${rsvpStatusHTML(L)}
+    <div class="small muted" style="margin:8px 0 12px">${L.total?'Kadroya ilk “Geliyorum” diyen 14 kişi girer; sonrakiler sırayla yedeğe yazılır.':'Linki gruba atın, herkes kendi telefonundan yanıt versin. İlk 14 kişi kadroya, sonrakiler yedeğe yazılır.'}</div>
+    ${L.total&&S.draft.auto===false?`<div class="status warn" style="margin-bottom:10px">Seçimi elle değiştirdiniz; kadro artık listeden otomatik dolmuyor.</div>`:''}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="btn sm" data-act="rsvp-open">${icon(I.users,16)} Listeyi Aç</button>
+      <button class="btn sm primary" data-act="rsvp-share">${icon(I.link,16)} Linki Paylaş</button>
+      ${L.total&&S.draft.auto===false?`<button class="btn sm" style="grid-column:1/-1" data-act="rsvp-apply">${icon(I.refresh,16)} Kadroyu listeden doldur</button>`:''}
+    </div></div>`;
+}
+function rsvpModal(date){
+  date=date||S.draft.date; UI.rsvpDate=date;
+  const me=getMe(); const L=rsvpLists(date); const my=me&&(S.rsvp[date]||{})[me];
+  const si=me?L.squad.findIndex(x=>x.id===me):-1, bi=me?L.bench.findIndex(x=>x.id===me):-1;
+  const myLine=!my?'Henüz yanıt vermedin.':my.s==='yes'?(si>=0?`✅ Kadrodasın · ${si+1}. sıra`:`⏳ Yedektesin · ${bi+1}. sırada. Kadrodan biri çıkarsa sırayla kadroya girersin.`):my.s==='maybe'?'🤔 “Belki” dedin. Kadroya girmek için “Geliyorum”a dokun.':'❌ Bu maça gelemiyorsun.';
+  const slots=[...Array(MATCH_SIZE)].map((_,i)=>{const x=L.squad[i];return x?`<li class="${x.id===me?'me':''}"><span class="n">${i+1}</span>${esc(nameOf(x.id))}</li>`:`<li class="free"><span class="n">${i+1}</span>Boş yer</li>`;}).join('');
+  const sec=(t,ic,arr,open)=>arr.length?`<details class="rs-sec" ${open?'open':''}><summary>${ic} ${t} <b>${arr.length}</b></summary><ul>${arr.map(x=>`<li class="${x.id===me?'me':''}">${ic} ${esc(nameOf(x.id))}</li>`).join('')}</ul></details>`:'';
+  const body=`${rsvpStatusHTML(L)}
+    ${!me?whoPicker(S.players.slice().sort((a,b)=>a.name.localeCompare(b.name,'tr')).map(p=>p.id),'rsvp-me'):`
+    <div class="my-rs"><div class="row" style="justify-content:space-between"><span class="small">Senin yanıtın · <b>${esc(nameOf(me))}</b></span><button class="btn sm ghost" data-act="rsvp-change">Ben değilim</button></div>
+      <div class="rs-btns">${['yes','maybe','no'].map(s=>`<button class="rs ${s} ${my&&my.s===s?'on':''}" data-act="rsvp-set" data-s="${s}" aria-pressed="${my&&my.s===s?'true':'false'}"><span>${RS_ICON[s]}</span>${RS_TR[s]}${my&&my.s===s?' ✓':''}</button>`).join('')}</div>
+      <p class="small my-line">${myLine}</p></div>`}
+    <div class="sect">Kadro · ${L.squad.length}/${MATCH_SIZE}</div>
+    <ol class="rs-squad">${slots}</ol>
+    ${L.bench.length?`<div class="sect">Yedek sırası</div><p class="small muted" style="margin:-4px 0 6px">Kadrodan biri çıkarsa ilk sıradaki yedek otomatik olarak kadroya girer.</p><ol class="rs-bench">${L.bench.map((x,i)=>`<li class="${x.id===me?'me':''}"><span class="n">${i+1}.</span>⏳ ${esc(nameOf(x.id))}<small>${i===0?'sıradaki':''}</small></li>`).join('')}</ol>`:''}
+    <div class="rs-more">${sec('Belki','🤔',L.maybe,L.maybe.length<=4)}${sec('Yanıt bekleniyor','❔',L.none,false)}${sec('Gelemiyor','❌',L.no,false)}</div>`;
+  openModal(`Katılım · ${esc(fmtDate(date,{day:'numeric',month:'long',weekday:'short'}))}`,body,`<button class="btn ghost" data-act="close-modal">Kapat</button><button class="btn" data-act="rsvp-share">${icon(I.link,16)} Linki Paylaş</button>`,'wide');
+}
+
+/* ================== Maç sonu oylaması (adım adım) ================== */
+function voteModal(mid,keep){
+  const m=S.matches.find(x=>x.id===mid); if(!m){ toast('Maç bulunamadı','err'); return; }
+  const ids=[...m.teamA.players,...m.teamB.players].map(e=>e.id).filter(id=>!isGuest(id));
+  const vs=voteSummary(m);
+  if(!keep||!UI.vote||UI.vote.mid!==mid){
+    let me=getMe(); if(me&&!ids.includes(me)) me=null; if(UI.voteAs&&ids.includes(UI.voteAs)) me=UI.voteAs;
+    const mine=me?vs.votes.find(v=>v.voterId===me):null;
+    UI.vote={mid,me,mvp:mine?mine.mvpId:null,ratings:Object.assign({},mine?mine.ratings:{}),step:!me?0:mine?4:1,had:!!mine};
+  }
+  const V=UI.vote, me=V.me, k=me?sideOf(m,me):null;
+  const mates=me?(k==='A'?m.teamA:m.teamB).players.map(e=>e.id).filter(id=>id!==me&&!isGuest(id)):[];
+  const rated=mates.filter(id=>+V.ratings[id]>=1).length;
+  const resTxt=scored(m)?`<span style="color:#93c5fd">A ${m.scoreA}</span> - <span style="color:#fca5a5">${m.scoreB} B</span>`:'Skor girilmedi';
+  const steps=[['1','Maçın oyuncusu'],['2','Puanla'],['3','Gönder']];
+  const stepper=me&&V.step>=1&&V.step<=3?`<div class="vstep">${steps.map(([n,l],i)=>`<div class="${V.step===i+1?'on':V.step>i+1?'done':''}"><i>${V.step>i+1?'✓':n}</i><span>${l}</span></div>`).join('')}</div>`:'';
+  const privacy=`<div class="vprivacy">🔒 Oylar gizlidir. Kimin kime puan verdiği gösterilmez; yalnızca ortalamalar ve maçın oyuncusu görünür.</div>`;
+  let body=`<div class="vote-head"><b>${esc(fmtDate(m.date,{day:'numeric',month:'long',weekday:'long'}))}</b><span class="vscore">${resTxt}</span></div>`, foot='';
+  if(!me){
+    body+=whoPicker(ids,'vote-me')+`<div class="sect">Sonuçlar · ${vs.n} oy</div>${voteResultsHTML(m,vs)}`;
+    foot=`<button class="btn ghost" data-act="vote-share" data-id="${mid}">${icon(I.link,16)} Oy linkini paylaş</button>`;
+  } else if(V.step===1){
+    const tiles=t=>t.players.filter(e=>e.id!==me&&!isGuest(e.id)).map(e=>`<button class="mvp-tile ${sideOf(m,e.id)} ${V.mvp===e.id?'on':''}" data-act="vote-mvp" data-id="${e.id}" aria-pressed="${V.mvp===e.id}">${V.mvp===e.id?'⭐ ':''}${esc(nameOf(e.id))}</button>`).join('');
+    body+=stepper+`<div class="row" style="justify-content:space-between"><span class="small">Oy veren: <b>${esc(nameOf(me))}</b> <span class="muted">(${k} Takımı)</span></span><button class="btn sm ghost" data-act="vote-change">Ben değilim</button></div>
+      <h3 class="vq">Maçın oyuncusu kimdi?</h3><p class="small muted" style="margin-top:-6px">Kendine oy veremezsin. İki takımdan da seçebilirsin.</p>
+      <div class="mvp-cols"><div><div class="mvp-h A">A Takımı</div><div class="mvp-grid" id="v-mvp">${tiles(m.teamA)}</div></div><div><div class="mvp-h B">B Takımı</div><div class="mvp-grid">${tiles(m.teamB)}</div></div></div>${privacy}`;
+    foot=`<button class="btn ghost" data-act="vote-skip">MVP seçmeden devam</button><button class="btn primary" data-act="vote-next" ${V.mvp?'':'disabled'} id="v-next">Devam ${icon(I.move,16)}</button>`;
+  } else if(V.step===2){
+    body+=stepper+`<h3 class="vq">Takım arkadaşlarını puanla</h3>
+      <div class="vprog"><div class="row" style="justify-content:space-between"><span class="small"><b id="v-cnt">${rated}</b>/${mates.length} oyuncu puanlandı</span><span class="small muted">1 = çok kötü · 10 = muhteşem</span></div><div class="rs-bar"><i id="v-bar" style="width:${mates.length?rated/mates.length*100:0}%"></i></div></div>
+      <div class="vrate">${mates.map(id=>{const v=+V.ratings[id]||0;return `<div class="vr2"><div class="vr-h"><span class="nm">${esc(nameOf(id))}</span><b class="vr-val ${v?'on':''}" id="vv-${id}">${v||'–'}</b></div><div class="r10b">${[...Array(10)].map((_,i)=>`<button class="${v===i+1?'on':''}" data-act="vote-r" data-id="${id}" data-v="${i+1}" aria-label="${i+1} puan">${i+1}</button>`).join('')}</div></div>`;}).join('')||'<p class="small muted">Takımında puanlanacak oyuncu yok.</p>'}</div>`;
+    foot=`<button class="btn ghost" data-act="vote-back">${icon('<path d="M19 12H5M11 18l-6-6 6-6"/>',16)} Geri</button><button class="btn primary" data-act="vote-next">Özete geç ${icon(I.move,16)}</button>`;
+  } else if(V.step===3){
+    const rs=mates.filter(id=>+V.ratings[id]>=1); const miss=mates.length-rs.length;
+    body+=stepper+`<h3 class="vq">Göndermeden önce kontrol et</h3>
+      <div class="vsum"><div><span>⭐ Maçın oyuncusu</span><b>${V.mvp?esc(nameOf(V.mvp)):'Seçilmedi'}</b></div>
+        <div><span>Puanlar</span><b>${rs.length?rs.map(id=>`${esc(shortName(nameOf(id)))} <em>${V.ratings[id]}</em>`).join(' · '):'Puan verilmedi'}</b></div></div>
+      ${miss?`<p class="small muted">${miss} oyuncuyu puanlamadın; puanlanmayanlar ortalamaya katılmaz.</p>`:''}${privacy}
+      ${!V.mvp&&!rs.length?`<div class="status warn">Göndermek için maçın oyuncusunu seç ya da en az bir puan ver.</div>`:''}`;
+    foot=`<button class="btn ghost" data-act="vote-back">${icon('<path d="M19 12H5M11 18l-6-6 6-6"/>',16)} Geri</button><button class="btn primary" data-act="vote-save" ${!V.mvp&&!rs.length?'disabled':''}>${icon(I.check)} ${V.had?'Oyu Güncelle':'Oyu Gönder'}</button>`;
+  } else {
+    body+=`<div class="vdone"><div class="vdone-i">✅</div><h3>Oyun kaydedildi</h3><p class="small muted">Teşekkürler, ${esc(shortName(nameOf(me)))}. İstersen oyunu daha sonra değiştirebilirsin.</p></div>
+      <div class="sect">Sonuçlar · ${vs.n} oy</div>${voteResultsHTML(m,vs)}`;
+    foot=`<button class="btn ghost" data-act="vote-share" data-id="${mid}">${icon(I.link,16)} Oy linkini paylaş</button><button class="btn" data-act="vote-edit">${icon(I.edit,16)} Oyumu düzenle</button>`;
+  }
+  openModal('Maç Sonu Oylaması',body,foot,'wide');
+}
+function voteSave(){
+  const V=UI.vote; if(!V||!V.me) return;
+  delete V.ratings[V.me]; if(V.mvp===V.me) V.mvp=null;      // kendine oy verilemez
+  const ratings=Object.fromEntries(Object.entries(V.ratings).filter(([id,v])=>+v>=1&&!isGuest(id)));
+  if(!V.mvp&&!Object.keys(ratings).length){ toast('Maçın oyuncusunu seçin ya da puan verin','err'); return; }
+  const now=new Date().toISOString();
+  const v={matchId:V.mid,voterId:V.me,mvpId:V.mvp||null,ratings,updatedAt:now};
+  const i=S.votes.findIndex(x=>x.matchId===v.matchId&&x.voterId===v.voterId); if(i>=0) S.votes[i]=Object.assign(S.votes[i],v); else S.votes.push(Object.assign({createdAt:now},v));
+  setMe(V.me); resetAI(); persist();
+  cloud(()=>Cloud.upsert('votes',[{group_id:G.id,match_id:v.matchId,voter_id:v.voterId,mvp_id:v.mvpId,ratings:v.ratings,updated_at:now}],'group_id,match_id,voter_id'));
+  V.step=4; V.had=true; voteModal(V.mid,true); render();
+}
+
 /* ================== Görünüm: Ayarlar ================== */
 function vSettings(){
   const st=S.settings, w=st.weights, wn=weightsNorm(); const tot=w.power+w.pos+w.stamina+w.gk;
@@ -2748,9 +3044,28 @@ const ACT = {
   'stab':el=>{UI.sTab=el.dataset.v;render();},
   'vote-open':el=>{UI.voteAs=null;voteModal(el.dataset.id);},
   'vote-me':el=>{setMe(el.dataset.id);UI.voteAs=el.dataset.id;voteModal(UI.vote.mid);},
-  'vote-change':()=>{UI.voteAs=null;setMe(null);voteModal(UI.vote.mid);},
-  'vote-mvp':el=>{UI.vote.mvp=UI.vote.mvp===el.dataset.id?null:el.dataset.id;document.querySelectorAll('#v-mvp .chipbtn').forEach(b=>b.classList.toggle('on',b.dataset.id===UI.vote.mvp));},
-  'vote-r':el=>{const id=el.dataset.id,v=+el.dataset.v;UI.vote.ratings[id]=UI.vote.ratings[id]===v?null:v;el.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===UI.vote.ratings[id]));},
+  'vote-change':()=>{UI.voteAs=null;setMe(null);UI.vote.me=null;voteModal(UI.vote.mid);},
+  'vote-mvp':el=>{const id=el.dataset.id;UI.vote.mvp=UI.vote.mvp===id?null:id;document.querySelectorAll('.mvp-tile').forEach(b=>{const on=b.dataset.id===UI.vote.mvp;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on);b.textContent=(on?'⭐ ':'')+nameOf(b.dataset.id);});const n=$('#v-next');if(n)n.disabled=!UI.vote.mvp;},
+  'vote-r':el=>{const id=el.dataset.id,v=+el.dataset.v;UI.vote.ratings[id]=+UI.vote.ratings[id]===v?null:v;const cur=+UI.vote.ratings[id]||0;el.parentNode.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.v===cur));const vv=$('#vv-'+CSS.escape(id));if(vv){vv.textContent=cur||'–';vv.classList.toggle('on',!!cur);}
+    const rows=document.querySelectorAll('.vr2').length;const done=Object.entries(UI.vote.ratings).filter(([k,x])=>+x>=1&&k!==UI.vote.me).length;const c=$('#v-cnt');if(c)c.textContent=done;const bar=$('#v-bar');if(bar)bar.style.width=(rows?done/rows*100:0)+'%';},
+  'vote-next':()=>{UI.vote.step=Math.min(3,UI.vote.step+1);voteModal(UI.vote.mid,true);},
+  'vote-back':()=>{UI.vote.step=Math.max(1,UI.vote.step-1);voteModal(UI.vote.mid,true);},
+  'vote-skip':()=>{UI.vote.mvp=null;UI.vote.step=2;voteModal(UI.vote.mid,true);},
+  'vote-edit':()=>{UI.vote.step=1;voteModal(UI.vote.mid,true);},
+  'guest-add':()=>guestModal(null),
+  'guest-edit':(el,e)=>{e.stopPropagation();guestModal(el.dataset.id);},
+  'guest-save':()=>guestSave(),
+  'guest-del':el=>guestDel(el.dataset.id),
+  'gs-pos':el=>{const c=el.dataset.c,a=UI.guest.pos;const i=a.indexOf(c);if(i>=0)a.splice(i,1);else a.push(c);el.classList.toggle('sel',a.includes(c));},
+  'gs-gk':el=>{UI.guest.gk=!UI.guest.gk;el.classList.toggle('on',UI.guest.gk);},
+  'gs-lv':el=>{$('#gs-level').value=el.dataset.v;},
+  'gconv-open':guard(el=>guestConvertModal(el.dataset.mid,el.dataset.id)),
+  'gconv-do':()=>guestConvertDo(),
+  'home-rsvp':el=>{const d=el.dataset.d;if(S.draft.date!==d){S.draft.date=d;S.draft.auto=true;applyRsvpToDraft();persist();}rsvpModal(d);},
+  'home-go-mac':el=>{const d=el.dataset.d;if(S.draft.date!==d){S.draft.date=d;S.draft.auto=true;applyRsvpToDraft();persist();}setMode('denge');go(S.current&&S.current.date===d?'takimlar':'mac');},
+  'home-share':el=>{const d=el.dataset.d||S.draft.date;shareText('Maç katılımı',`⚽ ${G.name} · ${fmtDate(d,{day:'numeric',month:'long',weekday:'long'})} maçı. Geliyor musun? İlk ${MATCH_SIZE} kişi kadroda:`,shareLink('katilim',d));},
+  'home-fx':()=>{setMode('takim');fxNew();},
+  'home-new-ic':()=>{setMode('denge');go('mac');setTimeout(()=>{const i=$('input[data-inp=mdate]');if(i){i.focus();try{i.showPicker&&i.showPicker();}catch(e){}}toast('Maç tarihini seçin, sonra katılım linkini paylaşın');},200);},
   'vote-save':()=>voteSave(),
   'vote-share':el=>{const m=S.matches.find(x=>x.id===el.dataset.id);shareText('Maç sonu oylaması',`⭐ ${G.name} · ${fmtDate(m.date,{day:'numeric',month:'long'})} maçı oylaması: maçın oyuncusunu seç, takım arkadaşlarına puan ver`,shareLink('oy',m.id));},
   'rsvp-open':()=>rsvpModal(S.draft.date),
