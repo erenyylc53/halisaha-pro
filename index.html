@@ -710,6 +710,10 @@ body.dnd,body.dnd *{cursor:grabbing!important;user-select:none}
 .vsum{display:grid;gap:8px}.vsum>div{padding:12px;border-radius:12px;background:var(--card2);display:grid;gap:4px}.vsum span{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase}.vsum em{font-style:normal;color:var(--green);font-weight:800}
 .vdone{text-align:center;padding:10px 0}.vdone-i{font-size:44px}.vdone h3{font-family:var(--cond);font-size:26px;text-transform:uppercase;margin:6px 0}
 @media (max-width:760px){.feats,.modes-cmp{grid-template-columns:1fr}.welcome .hero h1{font-size:32px}.qa-grid{grid-template-columns:1fr 1fr}.home-hi h1{font-size:30px}.nm-card h2{font-size:24px}.r10b{grid-template-columns:repeat(5,1fr)}.r10b button{height:44px}.mvp-cols{grid-template-columns:1fr}.vstep span{font-size:11px}.rs-squad{grid-template-columns:1fr 1fr}}
+.fmt-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.fmt{font:inherit;color:var(--text);display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 4px;border-radius:12px;background:var(--card2);border:1px solid var(--line);cursor:pointer}
+.fmt b{font-family:var(--cond);font-size:19px;font-weight:800}.fmt small{font-size:11px;color:var(--muted)}
+.fmt.on{background:rgba(61,220,132,.14);border-color:var(--green)}.fmt.on b{color:var(--green)}
 </style>
 </head>
 <body>
@@ -796,7 +800,14 @@ const POS_W = {
 const LINE_SUBS = {GK:[['GK',1]],DEF:[['STP',1],['BEK',1]],MID:[['OS',1],['KNT',1]],FWD:[['FV',1],['KNT',.95]]};
 const WIDE = new Set(['BEK','KNT']);
 const ALL_FORMATIONS = ['2-3-1','3-2-1','2-2-2','3-1-2','1-3-2','1-2-3','2-1-3','1-4-1'];
-const TEAM_SIZE = 7, MATCH_SIZE = 14, SC = 9.9; // 99'luk ölçek → 10'luk fark normalizasyonu
+let TEAM_SIZE = 7, MATCH_SIZE = 14; const SC = 9.9;
+const SIZES=[6,7,8,9,10,11];
+const DEF_FORM={5:'2-1-1',6:'2-2-1',8:'3-3-1',9:'3-3-2',10:'3-4-2',11:'4-4-2'};
+const VS_SUF={5:'e',6:'ya',7:'ye',8:'e',9:'a',10:'a',11:'e'};
+const vsTxt=n=>`${n}'${VS_SUF[n]||'e'} ${n}`;
+function icSize(d){ const D=(S.club&&S.club.data)||{}; const v=+((D.icFormats||{})[d]||D.icDefault||7); return SIZES.includes(v)?v:7; }
+const icTotal=d=>icSize(d)*2;
+function syncSize(){ TEAM_SIZE=icSize(S.draft.date); MATCH_SIZE=TEAM_SIZE*2; } // 99'luk ölçek → 10'luk fark normalizasyonu
 const DEFAULT_SETTINGS = {
   weights:{power:35,pos:30,stamina:20,gk:15},
   defaultFormation:'2-3-1',
@@ -1141,13 +1152,13 @@ function leaveGroup(code){
 function parseF(name){const [d,m,f]=name.split('-').map(Number);return {d,m,f,name};}
 function formationsFor(n){
   const of=n-1, st=S.settings;
-  if(n===TEAM_SIZE){
+  if(n===7){
     let list = st.autoFormation ? st.formations.slice() : [st.defaultFormation];
     if(!list.includes(st.defaultFormation)) list.unshift(st.defaultFormation);
     return list.map(parseF);
   }
-  const out=[]; const min=of>=3?1:0;
-  for(let d=min;d<=of;d++)for(let m=min;m<=of-d;m++){const f=of-d-m;if(f>=min&&f<=3)out.push({d,m,f,name:`${d}-${m}-${f}`});}
+  const out=[]; const min=of>=3?1:0, cap=Math.min(of,5);
+  for(let d=min;d<=cap;d++)for(let m=min;m<=Math.min(of-d,5);m++){const f=of-d-m;if(f>=min&&f<=3)out.push({d,m,f,name:`${d}-${m}-${f}`});}
   return out.length?out:[{d:Math.max(of,0),m:0,f:0,name:`${Math.max(of,0)}-0-0`}];
 }
 function assign(sc,fm){
@@ -1172,10 +1183,10 @@ function assign(sc,fm){
 }
 function optimizeRoles(ps){
   const sc=ps.map(p=>ROLES.map(r=>roleScore(p,r)));
-  let best=null; const def=S.settings.defaultFormation;
+  let best=null; const def=ps.length===7?S.settings.defaultFormation:(DEF_FORM[ps.length]||''); const half=Math.ceil((ps.length-1)/2);
   for(const fm of formationsFor(ps.length)){
     const r=assign(sc,fm); if(!r) continue;
-    const v=r.v+(fm.name===def?10:0); // varsayılan dizilişe hafif öncelik
+    const v=r.v+(fm.name===def?10:0)-6*Math.max(0,fm.d-half)-4*Math.max(0,fm.m-half); // varsayılan dizilişe hafif öncelik
     if(!best||v>best.v) best={v,roles:r.roles,formation:fm.name};
   }
   return best||{roles:ps.map((_,i)=>i===0?'GK':'MID'),formation:'—'};
@@ -1196,7 +1207,7 @@ function compareTeams(A,B){
   const w=weightsNorm();
   const lineDiff=avg(['DEF','MID','FWD'].map(l=>Math.abs(A.lines[l].avg-B.lines[l].avg)));
   const comps={
-    power:Math.abs(A.total-B.total)/TEAM_SIZE/SC,
+    power:Math.abs(A.total-B.total)/Math.max(A.n,B.n,1)/SC,
     pos:(Math.abs(A.outAvg-B.outAvg)+0.5*lineDiff)/SC,
     stamina:Math.abs(A.stamina-B.stamina)/SC,
     gk:Math.abs(A.gk-B.gk)/4/SC
@@ -1205,17 +1216,55 @@ function compareTeams(A,B){
   return {cost,comps,balance:clamp(100-cost*38,0,100),powerDiff:Math.abs(A.total-B.total)};
 }
 function combos(n,k){const out=[],c=[];(function rec(s){if(c.length===k){out.push(c.slice());return;}for(let i=s;i<=n-(k-c.length);i++){c.push(i);rec(i+1);c.pop();}})(0);return out;}
+const COMBO_LIMIT=7000;
+function binom(n,k){let r=1;for(let i=1;i<=k;i++)r=r*(n-k+i)/i;return Math.round(r);}
+// Büyük kadrolarda (8'e 8 ve üstü) tüm bölünmeler yerine rastgele örneklem + yerel iyileştirme
+function sampleSplits(n,k,ia,ib,count){
+  const free=[...Array(n).keys()].filter(i=>!ia.includes(i)&&!ib.includes(i)); const need=k-ia.length; const seen=new Set(), out=[];
+  for(let t=0;t<count*4&&out.length<count;t++){
+    const f=free.slice(); for(let i=f.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[f[i],f[j]]=[f[j],f[i]];}
+    const a=[...ia,...f.slice(0,need)].sort((x,y)=>x-y); let key=a.join(',');
+    if(!ia.length&&!ib.length&&a[0]!==0){ const s2=new Set(a); key=[...Array(n).keys()].filter(i=>!s2.has(i)).join(','); }
+    if(seen.has(key)) continue; seen.add(key); out.push(key.split(',').map(Number));
+  }
+  return out;
+}
 function makeCtx(ps,pinA=new Set(),pinB=new Set()){
   const n=ps.length,k=Math.floor(n/2);
   const ia=[],ib=[]; ps.forEach((p,i)=>{if(pinA.has(p.id))ia.push(i);if(pinB.has(p.id))ib.push(i);});
   const hasPins=ia.length||ib.length;
+  const free=n-ia.length-ib.length, total=binom(free-(hasPins?0:1),k-ia.length-(hasPins?0:1));
+  if(total>COMBO_LIMIT) return {ps,n,k,ia,ib,list:sampleSplits(n,k,ia,ib,2500),cache:new Map(),results:[],big:true,space:binom(n,k)/(hasPins?1:2)};
   const list=combos(n,k).filter(c=>{
     if(!hasPins) return n%2===1||c[0]===0;
     for(const i of ia) if(!c.includes(i)) return false;
     for(const i of ib) if(c.includes(i)) return false;
     return true;
   });
-  return {ps,n,k,list,cache:new Map(),results:[]};
+  return {ps,n,k,ia,ib,list,cache:new Map(),results:[]};
+}
+function evalSplit(ctx,a){
+  const set=new Set(a); const b=[]; for(let i=0;i<ctx.n;i++) if(!set.has(i)) b.push(i);
+  const A=evalIdx(ctx,a),B=evalIdx(ctx,b); const cmp=compareTeams(A.st,B.st);
+  return {A,B,cmp,score:cmp.cost-0.002*(A.st.posFit+B.st.posFit)/SC};
+}
+// Yerel iyileştirme: en iyi adaylardan başlayıp iki takım arasında oyuncu takası dener
+async function improveSplits(ctx,onTick){
+  const lock=new Set([...ctx.ia,...ctx.ib]); const seen=new Set(ctx.results.map(r=>r.A.idxs.join(',')));
+  const starts=ctx.results.slice().sort((x,y)=>x.score-y.score).slice(0,8);
+  for(let s=0;s<starts.length;s++){
+    let cur=starts[s];
+    for(let it=0;it<12;it++){
+      let best=null;
+      for(const i of cur.A.idxs){ if(lock.has(i)) continue;
+        for(const j of cur.B.idxs){ if(lock.has(j)) continue;
+          const a=cur.A.idxs.map(x=>x===i?j:x).sort((x,y)=>x-y); const key=a.join(',');
+          const r=evalSplit(ctx,a); if(!seen.has(key)){ seen.add(key); ctx.results.push(r); }
+          if(!best||r.score<best.score) best=r; } }
+      if(!best||best.score>=cur.score-1e-9) break; cur=best;
+    }
+    if(onTick) onTick(s+1,starts.length); await new Promise(r=>setTimeout(r,0));
+  }
 }
 function evalIdx(ctx,idxs){
   const key=idxs.join(','); let v=ctx.cache.get(key); if(v) return v;
@@ -1223,12 +1272,7 @@ function evalIdx(ctx,idxs){
   v={idxs,roles:o.roles,formation:o.formation,st:teamStats(ps,o.roles)}; ctx.cache.set(key,v); return v;
 }
 function runChunk(ctx,from,to){
-  for(let j=from;j<to&&j<ctx.list.length;j++){
-    const a=ctx.list[j]; const set=new Set(a); const b=[];
-    for(let i=0;i<ctx.n;i++) if(!set.has(i)) b.push(i);
-    const A=evalIdx(ctx,a),B=evalIdx(ctx,b); const cmp=compareTeams(A.st,B.st);
-    ctx.results.push({A,B,cmp,score:cmp.cost-0.002*(A.st.posFit+B.st.posFit)/SC});
-  }
+  for(let j=from;j<to&&j<ctx.list.length;j++) ctx.results.push(evalSplit(ctx,ctx.list[j]));
 }
 const splitKey=(res,ps)=>{const firstId=ps[0].id;const t=[res.A,res.B].find(t=>t.idxs.some(i=>ps[i].id===firstId));return t.idxs.map(i=>ps[i].id).sort().join('|');};
 function pickResult(ctx,prevKey){
@@ -1322,7 +1366,7 @@ async function copyText(t){
 function go(v){ if(location.hash!=='#'+v) location.hash=v; else {UI.view=v;render();} }
 function navHTML(){return (UI.mode==='takim'?TVIEWS:VIEWS).map(v=>`<a href="#${v.id}" class="${UI.view===v.id?'on':''}">${icon(v.icon,18)}<span>${v.name}</span></a>`).join('');}
 function render(){
-  const has=!!G.code;
+  const has=!!G.code; if(has) syncSize();
   $('#tabs').innerHTML=has?navHTML():''; $('#bnav').innerHTML=has?navHTML():'';
   $('#bnav').style.display=has?'':'none';
   $('#grp').innerHTML=has?`${icon(I.users,16)}<span>${esc(G.name)}</span>${icon(I.chev,14)}`:'';
@@ -1590,13 +1634,14 @@ function xlApply(){
 /* ================== Görünüm: Maç Oluştur ================== */
 function matchStatus(){
   const n=S.draft.selected.length;
-  if(n===0) return {cls:'warn',t:'Maça gelecek oyuncuları seçin. 7\'ye 7 için 14 oyuncu gerekli.'};
-  if(n<MATCH_SIZE) return {cls:'warn',t:`${MATCH_SIZE-n} oyuncu eksik. 7'ye 7 için ${MATCH_SIZE} oyuncu seçmelisiniz.`};
+  const F=vsTxt(TEAM_SIZE);
+  if(n===0) return {cls:'warn',t:`Maça gelecek oyuncuları seçin. ${F} için ${MATCH_SIZE} oyuncu gerekli.`};
+  if(n<MATCH_SIZE) return {cls:'warn',t:`${MATCH_SIZE-n} oyuncu eksik. ${F} için ${MATCH_SIZE} oyuncu seçmelisiniz.`};
   if(n>MATCH_SIZE) return {cls:'err',t:`${n-MATCH_SIZE} oyuncu fazla. Lütfen ${MATCH_SIZE} oyuncu seçin (şu an ${n}).`};
   const sel=S.draft.selected.map(getP).filter(Boolean);
   const gks=sel.filter(p=>p.positions.includes('GK')).length;
-  if(gks<2) return {cls:'ok',t:`14 oyuncu hazır. Not: Seçilenler arasında ${gks===0?'hiç':'yalnızca 1'} kaleci var; kalecilik puanı en yüksek oyuncular kaleye geçirilecek.`};
-  return {cls:'ok',t:`Kadro hazır! 14 oyuncu ile 7'ye 7 takımlar oluşturulabilir.`};
+  if(gks<2) return {cls:'ok',t:`${MATCH_SIZE} oyuncu hazır. Not: Seçilenler arasında ${gks===0?'hiç':'yalnızca 1'} kaleci var; kalecilik puanı en yüksek oyuncular kaleye geçirilecek.`};
+  return {cls:'ok',t:`Kadro hazır! ${MATCH_SIZE} oyuncu ile ${F} takımlar oluşturulabilir.`};
 }
 function matchListHTML(){
   const q=UI.mSearch.trim().toLocaleLowerCase('tr');
@@ -1612,7 +1657,8 @@ function matchSideHTML(){
   const c=n===MATCH_SIZE?'var(--green)':n>MATCH_SIZE?'var(--red)':'var(--amber)';
   const sel=S.draft.selected.map(getP).filter(Boolean);
   return `${rsvpCardHTML()}<div class="card">
-      <div class="field" style="margin-bottom:14px"><label>Maç Tarihi</label><input type="date" value="${S.draft.date}" data-inp="mdate"></div>
+      <div class="field" style="margin-bottom:12px"><label>Maç Tarihi</label><input type="date" value="${S.draft.date}" data-inp="mdate"></div>
+      <div class="field" style="margin-bottom:14px"><label>Maç Formatı</label><div class="fmt-chips">${SIZES.map(k=>`<button class="fmt ${TEAM_SIZE===k?'on':''}" data-act="ic-size" data-n="${k}" aria-pressed="${TEAM_SIZE===k}"><b>${k}v${k}</b><small>${k*2} kişi</small></button>`).join('')}</div></div>
       <div class="counter">
         <div class="ring" style="--p:${Math.min(100,n/MATCH_SIZE*100)};--c:${c}"><span>${n}<small>/ ${MATCH_SIZE}</small></span></div>
         <div><div style="font-family:var(--cond);font-size:22px;font-weight:800;text-transform:uppercase">Katılımcı</div>
@@ -1665,8 +1711,9 @@ async function generate(reroll=false){
     ids=S.draft.selected.slice(); date=S.draft.date;
   }
   const ps=ids.map(getP).filter(Boolean);
-  if(ps.length!==MATCH_SIZE){toast(`Takım oluşturmak için ${MATCH_SIZE} oyuncu gerekli (şu an ${ps.length}).`,'err');return;}
-  if(pinA.size>TEAM_SIZE||pinB.size>TEAM_SIZE){toast('Bir takımda en fazla 7 sabit oyuncu olabilir','err');return;}
+  const need=reroll&&cur?ids.length:MATCH_SIZE;
+  if(ps.length!==need||need%2){toast(`Takım oluşturmak için ${need} oyuncu gerekli (şu an ${ps.length}).`,'err');return;}
+  if(pinA.size>need/2||pinB.size>need/2){toast(`Bir takımda en fazla ${need/2} sabit oyuncu olabilir`,'err');return;}
   if(reroll&&cur){
     const tmp={A:{idxs:ps.map((p,i)=>cur.teamA.players.some(e=>e.id===p.id)?i:-1).filter(i=>i>=0)},B:{idxs:ps.map((p,i)=>cur.teamB.players.some(e=>e.id===p.id)?i:-1).filter(i=>i>=0)}};
     try{prevKey=splitKey(tmp,ps);}catch(e){prevKey=null;}
@@ -1676,7 +1723,7 @@ async function generate(reroll=false){
   $('#modal-root').innerHTML=`<div class="gen"><div class="gen-in">
     <svg class="ball" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#f4f6f8" stroke="#0a0b0d" stroke-width="3"/><path d="M50 28l17 12-6 20H39l-6-20z" fill="#0a0b0d"/><path d="M50 4v24M67 40l22-8M61 60l14 20M39 60L25 80M33 40l-22-8" stroke="#0a0b0d" stroke-width="3"/></svg>
     <h3>${reroll?'Yeni Kombinasyon Aranıyor':'Takımlar Dengeleniyor'}</h3>
-    <p>${total.toLocaleString('tr-TR')} olası takım kombinasyonu analiz ediliyor</p>
+    <p>${vsTxt(ps.length/2)} · ${ctx.big?`${Math.round(ctx.space).toLocaleString('tr-TR')} olasılık içinden en iyi ${total.toLocaleString('tr-TR')} aday + ince ayar`:`${total.toLocaleString('tr-TR')} olası takım kombinasyonu analiz ediliyor`}</p>
     <div class="prog"><i id="gprog"></i></div>
     <div class="cnt" id="gcnt">0 / ${total.toLocaleString('tr-TR')}</div>
     <div class="crit" id="gcrit"><span>Genel güç</span><span>Mevki uyumu</span><span>Hat dengesi</span><span>Kondisyon</span><span>Kaleci</span></div>
@@ -1689,6 +1736,7 @@ async function generate(reroll=false){
     crit.forEach((c,i)=>c.classList.toggle('on',pr>=i/crit.length));
     await new Promise(r=>setTimeout(r,16));
   }
+  if(ctx.big){ const gc=$('#gcnt'); await improveSplits(ctx,(a,b)=>{ if(gc) gc.textContent=`İnce ayar ${a}/${b}`; }); }
   const wait=Math.max(0,1100-(performance.now()-t0)); if(wait) await new Promise(r=>setTimeout(r,wait));
   const res=pickResult(ctx,prevKey);
   if(!res){$('#modal-root').innerHTML='';toast('Uygun kombinasyon bulunamadı (sabit oyuncuları kontrol edin)','err');return;}
@@ -1700,7 +1748,7 @@ async function generate(reroll=false){
   $('#modal-root').innerHTML='';
   UI.animate=true; UI.swapFrom=null; persist();
   if(UI.view!=='takimlar') go('takimlar'); else render();
-  toast(`Denge skoru %${Math.round(S.current.metrics.balance)} · ${total.toLocaleString('tr-TR')} kombinasyon değerlendirildi`,'ok');
+  toast(`Denge skoru %${Math.round(S.current.metrics.balance)} · ${ctx.results.length.toLocaleString('tr-TR')} kombinasyon değerlendirildi`,'ok');
 }
 
 /* ================== Görünüm: Takımlar ================== */
@@ -2239,14 +2287,15 @@ const RS_TR={yes:'Geliyorum',maybe:'Belki',no:'Gelemiyorum'};
 function rsvpLists(date){
   const r=S.rsvp[date]||{}; const ent=Object.entries(r).filter(([id])=>getP(id)).map(([id,o])=>({id,...o}));
   const yes=ent.filter(x=>x.s==='yes').sort((a,b)=>String(a.at).localeCompare(String(b.at)));
-  return {squad:yes.slice(0,MATCH_SIZE),bench:yes.slice(MATCH_SIZE),maybe:ent.filter(x=>x.s==='maybe'),no:ent.filter(x=>x.s==='no'),
+  const T=icTotal(date);
+  return {squad:yes.slice(0,T),bench:yes.slice(T),maybe:ent.filter(x=>x.s==='maybe'),no:ent.filter(x=>x.s==='no'),
     none:S.players.filter(p=>!r[p.id]).map(p=>({id:p.id})),total:ent.length};
 }
 function applyRsvpToDraft(){
   if(S.draft.auto===false) return false;
   const L=rsvpLists(S.draft.date); if(!L.squad.length) return false;
   const gs=draftGuests().map(g=>g.id).filter(id=>S.draft.selected.includes(id));
-  const ids=L.squad.slice(0,Math.max(0,MATCH_SIZE-gs.length)).map(x=>x.id).concat(gs); if(ids.join()===S.draft.selected.join()) return false;
+  const ids=L.squad.slice(0,Math.max(0,icTotal(S.draft.date)-gs.length)).map(x=>x.id).concat(gs); if(ids.join()===S.draft.selected.join()) return false;
   S.draft.selected=ids; return true;
 }
 function rsvpSet(s){
@@ -2460,7 +2509,7 @@ function vTMac(){
           <label class="field" style="grid-column:1/-1"><span>Not</span><input type="text" value="${esc(f.note)}" data-inp="fx-f" data-k="note" placeholder="İsteğe bağlı" maxlength="200"></label>
         </div></div>
       <div class="card"><div class="row" style="justify-content:space-between"><h3>Maç Kadrosu <small class="muted">${ids.size}</small></h3>
-          <label class="row small muted fx-size" style="gap:6px;flex-wrap:nowrap">Sahada <select data-inp="fx-size">${[5,6,7,8,9,10,11].map(k=>`<option ${n===k?'selected':''}>${k}</option>`).join('')}</select> kişi</label></div>
+          <label class="row small muted fx-size" style="gap:6px;flex-wrap:nowrap">Sahada <select data-inp="fx-size">${SIZES.map(k=>`<option value="${k}" ${n===k?'selected':''}>${k}v${k}</option>`).join('')}</select></label></div>
         <p class="small muted" style="margin:6px 0 10px">Maça gelecek oyuncuları seçin. ${S.club.squad.length?'':'Takım kadrosu boş; Kadro sekmesinden ekleyin.'}</p>
         <div class="who-list">${sq.map(p=>`<button class="chipbtn ${ids.has(p.id)?'sel':''}" data-act="fx-pick" data-id="${p.id}">${esc(p.name)}</button>`).join('')}</div>
         <div class="row" style="margin-top:12px;gap:8px">
@@ -2684,7 +2733,7 @@ function vWelcome(){
     </div>
     <div class="sect" style="margin:34px 0 14px">Neler yapabilirsiniz</div>
     <div class="feats">
-      ${feat('📣','Katılım ve yedek listesi','Linki gruba atın; herkes kendi telefonundan “Geliyorum / Belki / Gelemiyorum” desin. İlk 14 kişi kadroya, sonrakiler sırayla yedeğe yazılır.',
+      ${feat('📣','Katılım ve yedek listesi','Linki gruba atın; herkes kendi telefonundan “Geliyorum / Belki / Gelemiyorum” desin. Kadro dolana kadar gelenler kadroya, sonrakiler sırayla yedeğe yazılır.',
         `<div class="mp-rsvp"><div class="mp-big"><b>12</b>/14 <small>kadro</small></div><div class="rs-bar"><i style="width:86%"></i></div><div class="mp-chips"><span>⏳ 2 yedek</span><span>❔ 3 yanıt bekleniyor</span></div></div>`)}
       ${feat('⚖️','Dengeli takımlar','Her oyuncunun 99 üzerinden reytingi ve mevkisi hesaba katılır; uygulama tüm kombinasyonları deneyip en dengeli iki takımı ve dizilişi önerir. Sürükleyerek değiştirebilirsiniz.',
         `<div class="mp-teams">${miniPitch}<div class="mp-gauge"><b>%92</b><small>denge</small></div></div>`)}
@@ -2718,14 +2767,14 @@ function vHome(){
   const nm=nextMatchInfo();
   let hero;
   if(nm&&nm.kind==='ic'){
-    const L=rsvpLists(nm.date); const n=nm.date===S.draft.date&&S.draft.selected.length?S.draft.selected.length:L.squad.length; const gN=nm.date===S.draft.date?S.draft.selected.filter(isGuest).length:0;
-    const full=n>=MATCH_SIZE; const teams=S.current&&S.current.date===nm.date;
+    const T=icTotal(nm.date); const L=rsvpLists(nm.date); const n=nm.date===S.draft.date&&S.draft.selected.length?S.draft.selected.length:L.squad.length; const gN=nm.date===S.draft.date?S.draft.selected.filter(isGuest).length:0;
+    const full=n>=T; const teams=S.current&&S.current.date===nm.date;
     hero=`<div class="nm-card ic">
-      <div class="nm-top"><span class="nm-kind">⚖️ İç maç · ${TEAM_SIZE}'ye ${TEAM_SIZE}</span><span class="nm-when">${daysTo(nm.date)}</span></div>
+      <div class="nm-top"><span class="nm-kind">⚖️ İç maç · ${vsTxt(T/2)}</span><span class="nm-when">${daysTo(nm.date)}</span></div>
       <h2>${esc(fmtDate(nm.date,{weekday:'long',day:'numeric',month:'long'}))}</h2>
-      <div class="nm-stat"><div class="nm-big"><b>${n}</b>/${MATCH_SIZE}<small>kadro</small></div>
-        <div class="nm-chips"><span class="${n===MATCH_SIZE?'ok':'warn'}">${n===MATCH_SIZE?'✅ Kadro tamam':n>MATCH_SIZE?`⚠️ ${n-MATCH_SIZE} kişi fazla`:`➕ ${MATCH_SIZE-n} kişi eksik`}</span>${gN?`<span>🎟️ ${gN} konuk</span>`:''}${L.bench.length?`<span>⏳ ${L.bench.length} yedek</span>`:''}${L.maybe.length?`<span>🤔 ${L.maybe.length} belki</span>`:''}${L.total?`<span>❔ ${L.none.length} yanıt bekleniyor</span>`:''}${teams?`<span class="ok">⚖️ Takımlar hazır · %${Math.round(S.current.metrics.balance)}</span>`:''}</div></div>
-      <div class="rs-bar"><i style="width:${Math.min(100,n/MATCH_SIZE*100)}%"></i></div>
+      <div class="nm-stat"><div class="nm-big"><b>${n}</b>/${T}<small>kadro</small></div>
+        <div class="nm-chips"><span class="${n===T?'ok':'warn'}">${n===T?'✅ Kadro tamam':n>T?`⚠️ ${n-T} kişi fazla`:`➕ ${T-n} kişi eksik`}</span>${gN?`<span>🎟️ ${gN} konuk</span>`:''}${L.bench.length?`<span>⏳ ${L.bench.length} yedek</span>`:''}${L.maybe.length?`<span>🤔 ${L.maybe.length} belki</span>`:''}${L.total?`<span>❔ ${L.none.length} yanıt bekleniyor</span>`:''}${teams?`<span class="ok">⚖️ Takımlar hazır · %${Math.round(S.current.metrics.balance)}</span>`:''}</div></div>
+      <div class="rs-bar"><i style="width:${Math.min(100,n/T*100)}%"></i></div>
       ${!L.total?`<p class="small muted">Henüz kimse katılım bildirmedi. Linki paylaşın, kadro kendiliğinden dolsun.</p>`:''}
       <div class="row" style="gap:8px;margin-top:4px"><button class="btn sm" data-act="home-rsvp" data-d="${nm.date}">${icon(I.users,15)} Listeyi Aç</button><button class="btn sm primary" data-act="home-go-mac" data-d="${nm.date}">${icon(I.zap,15)} ${teams?'Takımları Gör':'Takımları Kur'}</button></div>
     </div>`;
@@ -2770,18 +2819,18 @@ function vHome(){
 
 /* ================== Katılım listesi (yeniden tasarım) ================== */
 const RS_ICON={yes:'✅',maybe:'🤔',no:'❌'};
-function rsvpStatusHTML(L){
-  const n=L.squad.length, free=MATCH_SIZE-n;
-  return `<div class="rs-status"><div class="nm-big"><b>${n}</b>/${MATCH_SIZE}<small>kadro</small></div>
+function rsvpStatusHTML(L,T){
+  const n=L.squad.length, free=T-n;
+  return `<div class="rs-status"><div class="nm-big"><b>${n}</b>/${T}<small>kadro · ${vsTxt(T/2)}</small></div>
     <div class="nm-chips"><span class="${free<=0?'ok':'warn'}">${free<=0?'✅ Kadro tamam':`➕ ${free} kişilik yer var`}</span>${L.bench.length?`<span>⏳ ${L.bench.length} yedek</span>`:''}${L.maybe.length?`<span>🤔 ${L.maybe.length} belki</span>`:''}${L.no.length?`<span>❌ ${L.no.length} gelemiyor</span>`:''}${L.none.length?`<span>❔ ${L.none.length} yanıt bekleniyor</span>`:''}</div></div>
-    <div class="rs-bar"><i style="width:${Math.min(100,n/MATCH_SIZE*100)}%"></i></div>`;
+    <div class="rs-bar"><i style="width:${Math.min(100,n/T*100)}%"></i></div>`;
 }
 function rsvpCardHTML(){
   const d=S.draft.date, L=rsvpLists(d);
   return `<div class="card rsvp-card">
     <div class="row" style="justify-content:space-between"><h3 style="font-size:16px">📣 Katılım Listesi</h3><span class="small muted">${esc(fmtDate(d,{day:'numeric',month:'short'}))}</span></div>
-    ${rsvpStatusHTML(L)}
-    <div class="small muted" style="margin:8px 0 12px">${L.total?'Kadroya ilk “Geliyorum” diyen 14 kişi girer; sonrakiler sırayla yedeğe yazılır.':'Linki gruba atın, herkes kendi telefonundan yanıt versin. İlk 14 kişi kadroya, sonrakiler yedeğe yazılır.'}</div>
+    ${rsvpStatusHTML(L,icTotal(d))}
+    <div class="small muted" style="margin:8px 0 12px">${L.total?`Kadroya ilk “Geliyorum” diyen ${icTotal(d)} kişi girer; sonrakiler sırayla yedeğe yazılır.`:`Linki gruba atın, herkes kendi telefonundan yanıt versin. İlk ${icTotal(d)} kişi kadroya, sonrakiler yedeğe yazılır.`}</div>
     ${L.total&&S.draft.auto===false?`<div class="status warn" style="margin-bottom:10px">Seçimi elle değiştirdiniz; kadro artık listeden otomatik dolmuyor.</div>`:''}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
       <button class="btn sm" data-act="rsvp-open">${icon(I.users,16)} Listeyi Aç</button>
@@ -2794,14 +2843,15 @@ function rsvpModal(date){
   const me=getMe(); const L=rsvpLists(date); const my=me&&(S.rsvp[date]||{})[me];
   const si=me?L.squad.findIndex(x=>x.id===me):-1, bi=me?L.bench.findIndex(x=>x.id===me):-1;
   const myLine=!my?'Henüz yanıt vermedin.':my.s==='yes'?(si>=0?`✅ Kadrodasın · ${si+1}. sıra`:`⏳ Yedektesin · ${bi+1}. sırada. Kadrodan biri çıkarsa sırayla kadroya girersin.`):my.s==='maybe'?'🤔 “Belki” dedin. Kadroya girmek için “Geliyorum”a dokun.':'❌ Bu maça gelemiyorsun.';
-  const slots=[...Array(MATCH_SIZE)].map((_,i)=>{const x=L.squad[i];return x?`<li class="${x.id===me?'me':''}"><span class="n">${i+1}</span>${esc(nameOf(x.id))}</li>`:`<li class="free"><span class="n">${i+1}</span>Boş yer</li>`;}).join('');
+  const T=icTotal(date);
+  const slots=[...Array(T)].map((_,i)=>{const x=L.squad[i];return x?`<li class="${x.id===me?'me':''}"><span class="n">${i+1}</span>${esc(nameOf(x.id))}</li>`:`<li class="free"><span class="n">${i+1}</span>Boş yer</li>`;}).join('');
   const sec=(t,ic,arr,open)=>arr.length?`<details class="rs-sec" ${open?'open':''}><summary>${ic} ${t} <b>${arr.length}</b></summary><ul>${arr.map(x=>`<li class="${x.id===me?'me':''}">${ic} ${esc(nameOf(x.id))}</li>`).join('')}</ul></details>`:'';
-  const body=`${rsvpStatusHTML(L)}
+  const body=`${rsvpStatusHTML(L,T)}
     ${!me?whoPicker(S.players.slice().sort((a,b)=>a.name.localeCompare(b.name,'tr')).map(p=>p.id),'rsvp-me'):`
     <div class="my-rs"><div class="row" style="justify-content:space-between"><span class="small">Senin yanıtın · <b>${esc(nameOf(me))}</b></span><button class="btn sm ghost" data-act="rsvp-change">Ben değilim</button></div>
       <div class="rs-btns">${['yes','maybe','no'].map(s=>`<button class="rs ${s} ${my&&my.s===s?'on':''}" data-act="rsvp-set" data-s="${s}" aria-pressed="${my&&my.s===s?'true':'false'}"><span>${RS_ICON[s]}</span>${RS_TR[s]}${my&&my.s===s?' ✓':''}</button>`).join('')}</div>
       <p class="small my-line">${myLine}</p></div>`}
-    <div class="sect">Kadro · ${L.squad.length}/${MATCH_SIZE}</div>
+    <div class="sect">Kadro · ${L.squad.length}/${T}</div>
     <ol class="rs-squad">${slots}</ol>
     ${L.bench.length?`<div class="sect">Yedek sırası</div><p class="small muted" style="margin:-4px 0 6px">Kadrodan biri çıkarsa ilk sıradaki yedek otomatik olarak kadroya girer.</p><ol class="rs-bench">${L.bench.map((x,i)=>`<li class="${x.id===me?'me':''}"><span class="n">${i+1}.</span>⏳ ${esc(nameOf(x.id))}<small>${i===0?'sıradaki':''}</small></li>`).join('')}</ol>`:''}
     <div class="rs-more">${sec('Belki','🤔',L.maybe,L.maybe.length<=4)}${sec('Yanıt bekleniyor','❔',L.none,false)}${sec('Gelemiyor','❌',L.no,false)}</div>`;
@@ -3012,7 +3062,7 @@ const ACT = {
   'xl-export':()=>xlExport(),
   'xl-import':guard(()=>xlImportModal()),
   'xl-apply':guard(()=>xlApply()),
-  'toggle-sel':el=>{S.draft.auto=false;const id=el.dataset.id,a=S.draft.selected;const i=a.indexOf(id);if(i>=0)a.splice(i,1);else a.push(id);persist();refreshMatch();if(a.length===MATCH_SIZE&&i<0)toast('14 oyuncu seçildi — takımlar oluşturulabilir','ok');},
+  'toggle-sel':el=>{S.draft.auto=false;const id=el.dataset.id,a=S.draft.selected;const i=a.indexOf(id);if(i>=0)a.splice(i,1);else a.push(id);persist();refreshMatch();if(a.length===MATCH_SIZE&&i<0)toast(`${MATCH_SIZE} oyuncu seçildi — takımlar oluşturulabilir`,'ok');},
   'sel-all':()=>{S.draft.auto=false;const q=UI.mSearch.trim().toLocaleLowerCase('tr');S.players.filter(p=>!q||p.name.toLocaleLowerCase('tr').includes(q)).forEach(p=>{if(!S.draft.selected.includes(p.id))S.draft.selected.push(p.id);});persist();refreshMatch();},
   'sel-none':()=>{S.draft.auto=false;S.draft.selected=[];persist();refreshMatch();},
   'sel-last':()=>{S.draft.auto=false;const last=[...S.matches].sort((a,b)=>b.date.localeCompare(a.date))[0];if(!last)return;S.draft.selected=last.playerIds.filter(id=>getP(id));persist();refreshMatch();toast(`${fmtDate(last.date,{day:'numeric',month:'long'})} kadrosu seçildi (${S.draft.selected.length})`,'ok');},
@@ -3034,7 +3084,7 @@ const ACT = {
   'move-player':el=>movePlayer(el.dataset.id),
   'swap-start':el=>{UI.swapFrom=el.dataset.id;closeModal();render();toast('Takas için ikinci oyuncuyu seçin');},
   'swap-cancel':()=>{UI.swapFrom=null;render();},
-  'pin-player':el=>{const f=findInCurrent(el.dataset.id);if(!f)return;const n=f.t.players.filter(e=>e.pinned).length;if(!f.e.pinned&&n>=TEAM_SIZE){toast('En fazla 7 oyuncu sabitlenebilir','err');return;}f.e.pinned=!f.e.pinned;closeModal();persist();render();toast(f.e.pinned?`${shortName(teamPlayer(f.e).name)} ${f.k} Takımına sabitlendi`:'Sabitleme kaldırıldı','ok');},
+  'pin-player':el=>{const f=findInCurrent(el.dataset.id);if(!f)return;const n=f.t.players.filter(e=>e.pinned).length;if(!f.e.pinned&&n>=f.t.players.length){toast('Takımın tüm oyuncuları zaten sabit','err');return;}f.e.pinned=!f.e.pinned;closeModal();persist();render();toast(f.e.pinned?`${shortName(teamPlayer(f.e).name)} ${f.k} Takımına sabitlendi`:'Sabitleme kaldırıldı','ok');},
   'reopt-team':el=>{reoptimizeTeam(el.dataset.k==='A'?S.current.teamA:S.current.teamB);closeModal();afterChange('Mevkiler optimize edildi');},
   'hist-toggle':el=>{UI.openHist=UI.openHist===el.dataset.id?null:el.dataset.id;render();},
   'hist-score':el=>histScore(el.dataset.id),
@@ -3062,14 +3112,15 @@ const ACT = {
   'gconv-open':guard(el=>guestConvertModal(el.dataset.mid,el.dataset.id)),
   'gconv-do':()=>guestConvertDo(),
   'home-rsvp':el=>{const d=el.dataset.d;if(S.draft.date!==d){S.draft.date=d;S.draft.auto=true;applyRsvpToDraft();persist();}rsvpModal(d);},
+  'ic-size':el=>{const n=+el.dataset.n; if(n===TEAM_SIZE) return; S.club.data=Object.assign({},S.club.data); S.club.data.icFormats=Object.assign({},S.club.data.icFormats,{[S.draft.date]:n}); S.club.data.icDefault=n; saveClub(); syncSize(); S.draft.auto=S.draft.auto!==false; applyRsvpToDraft(); persist(); refreshMatch(); toast(`${vsTxt(n)} seçildi · ${n*2} oyuncu gerekiyor`,'ok');},
   'home-go-mac':el=>{const d=el.dataset.d;if(S.draft.date!==d){S.draft.date=d;S.draft.auto=true;applyRsvpToDraft();persist();}setMode('denge');go(S.current&&S.current.date===d?'takimlar':'mac');},
-  'home-share':el=>{const d=el.dataset.d||S.draft.date;shareText('Maç katılımı',`⚽ ${G.name} · ${fmtDate(d,{day:'numeric',month:'long',weekday:'long'})} maçı. Geliyor musun? İlk ${MATCH_SIZE} kişi kadroda:`,shareLink('katilim',d));},
+  'home-share':el=>{const d=el.dataset.d||S.draft.date;shareText('Maç katılımı',`⚽ ${G.name} · ${fmtDate(d,{day:'numeric',month:'long',weekday:'long'})} maçı. Geliyor musun? ${vsTxt(icSize(d))}, ilk ${icTotal(d)} kişi kadroda:`,shareLink('katilim',d));},
   'home-fx':()=>{setMode('takim');fxNew();},
   'home-new-ic':()=>{setMode('denge');go('mac');setTimeout(()=>{const i=$('input[data-inp=mdate]');if(i){i.focus();try{i.showPicker&&i.showPicker();}catch(e){}}toast('Maç tarihini seçin, sonra katılım linkini paylaşın');},200);},
   'vote-save':()=>voteSave(),
   'vote-share':el=>{const m=S.matches.find(x=>x.id===el.dataset.id);shareText('Maç sonu oylaması',`⭐ ${G.name} · ${fmtDate(m.date,{day:'numeric',month:'long'})} maçı oylaması: maçın oyuncusunu seç, takım arkadaşlarına puan ver`,shareLink('oy',m.id));},
   'rsvp-open':()=>rsvpModal(S.draft.date),
-  'rsvp-share':()=>{const d=UI.rsvpDate&&$('#modal-root').innerHTML?UI.rsvpDate:S.draft.date;shareText('Maç katılımı',`⚽ ${G.name} · ${fmtDate(d,{day:'numeric',month:'long',weekday:'long'})} maçı. Geliyor musun? İlk ${MATCH_SIZE} kişi kadroda:`,shareLink('katilim',d));},
+  'rsvp-share':()=>{const d=UI.rsvpDate&&$('#modal-root').innerHTML?UI.rsvpDate:S.draft.date;shareText('Maç katılımı',`⚽ ${G.name} · ${fmtDate(d,{day:'numeric',month:'long',weekday:'long'})} maçı. Geliyor musun? ${vsTxt(icSize(d))}, ilk ${icTotal(d)} kişi kadroda:`,shareLink('katilim',d));},
   'rsvp-me':el=>{setMe(el.dataset.id);rsvpModal(UI.rsvpDate);},
   'rsvp-change':()=>{setMe(null);rsvpModal(UI.rsvpDate);},
   'rsvp-set':el=>rsvpSet(el.dataset.s),
@@ -3270,7 +3321,7 @@ function vTactics(){
       </div>
       <div class="card">
         <h3>Saha Öğeleri</h3>
-        <div class="field"><label>Rakip oyuncu sayısı: <b id="tb-oppv" style="color:var(--text)">${b.opp||0}</b></label><input type="range" min="0" max="7" value="${b.opp||0}" data-inp="tb-opp"></div>
+        <div class="field"><label>Rakip oyuncu sayısı: <b id="tb-oppv" style="color:var(--text)">${b.opp||0}</b></label><input type="range" min="0" max="11" value="${b.opp||0}" data-inp="tb-opp"></div>
         <div class="toggle"><div><b>Top</b><div class="small muted">Sahada topu göster</div></div><button class="sw ${b.ball.show?'on':''}" data-act="tb-ball"></button></div>
         <button class="btn sm ghost" data-act="tb-reset" style="margin-top:8px">${icon(I.refresh,15)} Tahtayı Sıfırla</button>
       </div>
